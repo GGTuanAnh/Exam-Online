@@ -133,9 +133,5 @@ Exam-Online/
 └── nginx.conf              # Cấu hình Web Server
 ```
 
-## 🤝 Đóng góp
 
-Mọi đóng góp đều được hoan nghênh! Vui lòng tạo Pull Request hoặc Open Issue nếu bạn tìm thấy lỗi.
 
-## 📄 License
-Dự án được phát hành dưới giấy phép MIT.

@@ -1,0 +1,274 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUMS (Định nghĩa các giá trị cố định) ---
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE // Trắc nghiệm nhiều đáp án đúng
+  SINGLE_CHOICE   // Trắc nghiệm 1 đáp án đúng (A, B, C, D)
+  TRUE_FALSE      // Đúng/Sai
+  ESSAY           // Tự luận
+}
+
+enum QuestionLevel {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ExamStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  TIMEOUT
+}
+
+enum ResultStatus {
+  PASSED
+  FAILED
+}
+
+// --- MODELS (Các bảng dữ liệu) ---
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  // Username có thể null nếu đăng nhập bằng Google lần đầu chưa kịp đặt
+  username    String?   @unique 
+  // Password để Optional (?) vì đăng nhập Google/FB không có pass
+  password    String?   
+  firstName   String?   @map("first_name")
+  lastName    String?   @map("last_name")
+  
+  role        Role      @default(USER)
+  avatar      String?   // Link ảnh đại diện (từ Google hoặc upload)
+  
+  // --- Fields phục vụ Social Login ---
+  provider    String    @default("local") // "local", "google", "facebook", "github"
+  providerId  String?   @map("provider_id") // ID người dùng bên Google/Facebook
+  
+  createdAt   DateTime  @default(now()) @map("created_at")
+  isActive    Boolean   @default(false) @map("is_active")
+  
+  // Token xác thực email
+  verificationToken String? @map("verification_token")
+
+  // Quan hệ
+  examSessions    ExamSession[]
+  examResults     ExamResult[]
+  notifications   Notification[]
+  
+  @@map("users")
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  code        String   @unique // Mã môn học (VD: INT3306)
+  name        String
+  description String?
+  credits     Int?     // Số tín chỉ
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Quan hệ
+  questionBanks QuestionBank[]
+  exams         Exam[]
+  parts         Part[]
+
+  @@map("courses")
+}
+
+model Part {
+  id                    String    @id @default(uuid())
+  name                  String
+  description           String?
+  duration              Int       // Thời gian làm bài (phút)
+  courseId              String    @map("course_id")
+  questionBankId        String?   @map("question_bank_id")
+  score                 Int       @default(100) // Điểm tối đa
+  maxRetake             Int       @default(1) @map("max_retake") // Số lần làm lại
+  randomizeQuestions    Boolean   @default(false) @map("randomize_questions")
+  enableAntiCheat       Boolean   @default(false) @map("enable_anti_cheat")
+  enableTabWarning      Boolean   @default(false) @map("enable_tab_warning")
+  openTime              DateTime? @map("open_time") // Thời gian mở
+  closeTime             DateTime? @map("close_time") // Thời gian đóng
+  showAnswerAfterSubmit Boolean   @default(false) @map("show_answer_after_submit")
+  scoringMode           String    @default("latest") @map("scoring_mode") // latest, highest, average
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Quan hệ
+  course        Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questionBank  QuestionBank? @relation(fields: [questionBankId], references: [id])
+
+  @@map("parts")
+}
+
+model QuestionBank {
+  id             String   @id @default(uuid())
+  name           String   // Tên ngân hàng câu hỏi (VD: Chương 1 - Đại số)
+  description    String?
+  courseId       String   @map("course_id")
+  totalQuestions Int      @default(0) @map("total_questions")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Quan hệ
+  course    Course     @relation(fields: [courseId], references: [id])
+  questions Question[]
+  parts     Part[]
+
+  @@map("question_banks")
+}
+
+model Question {
+  id             String        @id @default(uuid())
+  content        String        // Nội dung câu hỏi (HTML/Text)
+  type           QuestionType  @default(SINGLE_CHOICE)
+  level          QuestionLevel @default(MEDIUM)
+  questionBankId String        @map("question_bank_id")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  // Quan hệ
+  questionBank    QuestionBank       @relation(fields: [questionBankId], references: [id])
+  options         QuestionOption[]   // Các phương án A, B, C, D
+  exams           ExamQuestion[]     // Câu hỏi này nằm trong đề thi nào
+  resultDetails   ExamResultDetail[] // Chi tiết kết quả thi
+
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String  @id @default(uuid())
+  questionId String  @map("question_id")
+  content    String  // Nội dung đáp án
+  isCorrect  Boolean @default(false) @map("is_correct") // Là đáp án đúng?
+
+  // Quan hệ
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("question_options")
+}
+
+model Exam {
+  id                 String    @id @default(uuid())
+  title              String    // Tên bài thi
+  description        String?
+  duration           Int       // Thời gian làm bài (phút)
+  courseId           String    @map("course_id")
+  
+  // Cấu hình bài thi
+  openTime           DateTime? @map("open_time")  // Thời gian mở đề
+  closeTime          DateTime? @map("close_time") // Thời gian đóng đề
+  maxRetake          Int       @default(1) @map("max_retake") // Số lần được phép thi
+  
+  // Cấu hình nâng cao
+  randomizeQuestions Boolean   @default(false) @map("randomize_questions") // Đảo câu hỏi
+  enableAntiCheat    Boolean   @default(false) @map("enable_anti_cheat") // Bật chống gian lận
+  
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  // Quan hệ
+  course        Course         @relation(fields: [courseId], references: [id])
+  questions     ExamQuestion[] // Danh sách câu hỏi trong đề
+  examSessions  ExamSession[]  // Các lượt thi của sinh viên
+
+  @@map("exams")
+}
+
+// Bảng trung gian: Câu hỏi trong đề thi (để lưu điểm riêng cho câu hỏi trong đề này)
+model ExamQuestion {
+  examId     String @map("exam_id")
+  questionId String @map("question_id")
+  point      Float  @default(1.0) // Điểm số của câu này trong đề này
+  order      Int?   // Thứ tự xuất hiện (nếu không random)
+
+  exam     Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@id([examId, questionId])
+  @@map("exam_questions")
+}
+
+model ExamSession {
+  id        String     @id @default(uuid())
+  examId    String     @map("exam_id")
+  userId    String     @map("user_id")
+  startTime DateTime   @default(now()) @map("start_time")
+  endTime   DateTime?  @map("end_time") // Thời điểm nộp bài thực tế
+  status    ExamStatus @default(IN_PROGRESS)
+  
+  // Lưu tạm câu trả lời để phòng mất mạng/refresh trang
+  // Dạng JSON: { "questionId_1": "optionId_A", "questionId_2": "text answer" }
+  currentAnswers Json? @map("current_answers") 
+
+  // Quan hệ
+  exam   Exam   @relation(fields: [examId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  result ExamResult?
+
+  @@map("exam_sessions")
+}
+
+model ExamResult {
+  id               String       @id @default(uuid())
+  sessionId        String       @unique @map("session_id") // 1 Session chỉ có 1 kết quả
+  userId           String       @map("user_id")
+  examId           String       @map("exam_id")
+  
+  score            Float        // Tổng điểm đạt được
+  totalQuestions   Int          @map("total_questions")
+  correctAnswers   Int          @map("correct_answers")
+  submittedAt      DateTime     @default(now()) @map("submitted_at")
+  status           ResultStatus // PASSED / FAILED
+  
+  leaveScreenCount Int          @default(0) @map("leave_screen_count") // Số lần rời tab (Anti-cheat)
+
+  // Quan hệ
+  session ExamSession        @relation(fields: [sessionId], references: [id])
+  user    User               @relation(fields: [userId], references: [id])
+  details ExamResultDetail[] // Chi tiết từng câu đúng sai
+
+  @@map("exam_results")
+}
+
+model ExamResultDetail {
+  id               String  @id @default(uuid())
+  resultId         String  @map("result_id")
+  questionId       String  @map("question_id")
+  selectedOptionId String? @map("selected_option_id") // Đáp án user chọn
+  textAnswer       String? @map("text_answer")        // Đáp án tự luận
+  isCorrect        Boolean @map("is_correct")         // Hệ thống chấm: Đúng/Sai
+  pointEarned      Float   @map("point_earned")       // Điểm đạt được của câu này
+
+  result   ExamResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  question Question   @relation(fields: [questionId], references: [id])
+
+  @@map("exam_result_details")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  type      String   // VD: "course_added", "exam_upcoming"
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}

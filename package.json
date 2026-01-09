@@ -4,7 +4,7 @@
   "scripts": {
     "start": "ts-node backend/src/main.ts",
     "start:dev": "ts-node backend/src/main.ts",
-    "start:prod": "node dist/backend/src/main.js",
+    "start:prod": "node dist/main.js",
     "build": "tsc",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -14,22 +14,9 @@
   },
   "devDependencies": {
     "@nestjs/testing": "^11.1.11",
-    "@types/bcrypt": "^6.0.0",
-    "@types/jest": "^30.0.0",
-    "@types/multer": "^2.0.0",
-    "@types/node": "^25.0.3",
-    "@types/nodemailer": "^7.0.4",
-    "@types/passport-google-oauth20": "^2.0.17",
-    "@types/passport-jwt": "^4.0.1",
-    "@types/uuid": "^10.0.0",
-    "axios": "^1.13.2",
-    "dotenv": "^17.2.3",
-    "jest": "^30.2.0",
-    "ts-jest": "^29.4.6",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
-  },
   "dependencies": {
+    "typescript": "^5.9.3",
+    "@types/node": "^25.0.3",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.1.10",
     "@nestjs/config": "^4.0.2",

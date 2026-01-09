@@ -13,7 +13,8 @@
     "test:cov": "jest --coverage"
   },
   "devDependencies": {
-    "@nestjs/testing": "^11.1.11",
+    "@nestjs/testing": "^11.1.11"
+  },
   "dependencies": {
     "typescript": "^5.9.3",
     "@types/node": "^25.0.3",

@@ -4,22 +4,25 @@ import { Clock, ChevronLeft, ChevronRight, Flag, AlertTriangle } from 'lucide-re
 import { showToast } from '../../lib/toast';
 import { examService } from '../../services/exam.service';
 import type { ExamSession } from '../../types/exam';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const TakeExamPage = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
-  
+
   const [session, setSession] = useState<ExamSession | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<{ [questionId: string]: string[] }>({});
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Anti-cheat states
   const [leaveScreenCount, setLeaveScreenCount] = useState(0);
   const [showWarning, setShowWarning] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [unansweredCount, setUnansweredCount] = useState(0);
 
   useEffect(() => {
     if (examId) {
@@ -123,13 +126,13 @@ const TakeExamPage = () => {
   const enterFullscreen = useCallback(() => {
     const elem = document.documentElement;
     if (elem.requestFullscreen) {
-      elem.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+      elem.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => { });
     }
   }, []);
 
   const exitFullscreen = useCallback(() => {
     if (document.exitFullscreen && document.fullscreenElement) {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => { });
     }
   }, []);
 
@@ -144,7 +147,7 @@ const TakeExamPage = () => {
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    
+
     // Auto enter fullscreen when anti-cheat is enabled
     if (session?.exam.enableAntiCheat && !loading) {
       enterFullscreen();
@@ -164,7 +167,7 @@ const TakeExamPage = () => {
       // Backend returns duration in minutes usually, but check response structure
       // Wait, remainingTime in service interface I said minutes, but backend logic returns exam.duration which usually is minutes. 
       // Need to convert to seconds.
-      setTimeRemaining(data.exam.duration * 60); 
+      setTimeRemaining(data.exam.duration * 60);
       setLoading(false);
     } catch (error: any) {
       showToast.error(error.response?.data?.message || 'Không thể bắt đầu bài thi');
@@ -194,7 +197,7 @@ const TakeExamPage = () => {
           [questionId]: [optionId],
         };
       }
-      
+
       // Auto save answer (optional debouncing could be added)
       // For now we just update local state
       return newAnswers;
@@ -209,26 +212,29 @@ const TakeExamPage = () => {
     ).length;
 
     if (unanswered > 0 && timeRemaining > 0) {
-      const confirm = window.confirm(
-        `Bạn còn ${unanswered} câu chưa trả lời. Bạn có chắc muốn nộp bài?`
-      );
-      if (!confirm) return;
+      // Show soft warning toast, then confirm modal
+      showToast.error(`Bạn còn ${unanswered} câu chưa hoàn thành`);
+      setUnansweredCount(unanswered);
+      setShowSubmitConfirm(true);
+      return;
     }
 
+    // If all answered or time's up, submit directly
+    await submitExam();
+  };
+
+  const submitExam = async () => {
+
+    setShowSubmitConfirm(false);
     setIsSubmitting(true);
     try {
-      // Transform answers to format required by backend
-      // Backend expects Record<questionId, answer>
-      // For multiple choice, it might expect array or comma separated? 
-      // Let's assume the backend handles the structure sent. 
-      // Just sending the whole answers object.
-      await examService.submitExam(session.id, answers, leaveScreenCount);
-      
+      await examService.submitExam(session!.id, answers, leaveScreenCount);
+
       // Exit fullscreen before navigate
       if (isFullscreen) {
         exitFullscreen();
       }
-      
+
       showToast.success('Nộp bài thành công!');
       navigate('/my-results');
     } catch (error) {
@@ -259,6 +265,18 @@ const TakeExamPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Submit Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showSubmitConfirm}
+        title="Xác nhận nộp bài"
+        message={`Bạn còn ${unansweredCount} câu chưa hoàn thành. Bạn có chắc chắn muốn nộp bài không?`}
+        confirmText="Nộp bài"
+        cancelText="Tiếp tục làm"
+        onConfirm={submitExam}
+        onCancel={() => setShowSubmitConfirm(false)}
+        type="warning"
+      />
+
       {/* Anti-cheat Warning Popup */}
       {showWarning && session?.exam.enableAntiCheat && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -305,15 +323,14 @@ const TakeExamPage = () => {
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
-                timeRemaining < 300 ? 'bg-red-100 text-red-700' : 'bg-indigo-100 text-indigo-700'
-              }`}>
+              <div className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${timeRemaining < 300 ? 'bg-red-100 text-red-700' : 'bg-indigo-100 text-indigo-700'
+                }`}>
                 <Clock className="w-5 h-5" />
                 <span className="font-mono font-bold">{formatTime(timeRemaining)}</span>
               </div>
             </div>
           </div>
-          
+
           {/* Progress bar */}
           <div className="mt-4">
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -339,8 +356,8 @@ const TakeExamPage = () => {
                   {currentQuestion.content}
                 </p>
                 <p className="text-sm text-gray-500 mt-2">
-                  {currentQuestion.type === 'MULTIPLE_CHOICE' 
-                    ? '(Chọn nhiều đáp án)' 
+                  {currentQuestion.type === 'MULTIPLE_CHOICE'
+                    ? '(Chọn nhiều đáp án)'
                     : '(Chọn một đáp án)'}
                 </p>
               </div>
@@ -356,11 +373,10 @@ const TakeExamPage = () => {
               return (
                 <label
                   key={option.id}
-                  className={`flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    isSelected
-                      ? 'border-indigo-600 bg-indigo-50'
-                      : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
-                  }`}
+                  className={`flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${isSelected
+                    ? 'border-indigo-600 bg-indigo-50'
+                    : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                    }`}
                 >
                   <input
                     type={isMultiple ? 'checkbox' : 'radio'}
@@ -419,18 +435,17 @@ const TakeExamPage = () => {
             {session.questions.map((q, idx) => {
               const isAnswered = answers[q.question.id] && answers[q.question.id].length > 0;
               const isCurrent = idx === currentQuestionIndex;
-              
+
               return (
                 <button
                   key={q.id}
                   onClick={() => setCurrentQuestionIndex(idx)}
-                  className={`aspect-square flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                    isCurrent
-                      ? 'bg-indigo-600 text-white'
-                      : isAnswered
+                  className={`aspect-square flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${isCurrent
+                    ? 'bg-indigo-600 text-white'
+                    : isAnswered
                       ? 'bg-green-100 text-green-700 hover:bg-green-200'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   {idx + 1}
                 </button>

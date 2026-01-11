@@ -1,9 +1,9 @@
 // backend/src/exam-sessions/exam-sessions.service.ts
-import { 
-  Injectable, 
-  NotFoundException, 
-  BadRequestException, 
-  ForbiddenException 
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../common/constants/messages.constants';
@@ -14,7 +14,7 @@ import { ExamStatus, ResultStatus } from '@prisma/client';
 
 @Injectable()
 export class ExamSessionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async startExam(userId: string, startExamDto: StartExamDto) {
     const { examId } = startExamDto;
@@ -82,6 +82,18 @@ export class ExamSessionsService {
         (now.getTime() - ongoingSession.startTime.getTime()) / 1000 / 60
       );
       if (elapsed < exam.duration) {
+        const questionsWithoutAnswers = (exam.randomizeQuestions
+          ? this.shuffleArray(exam.questions)
+          : exam.questions
+        ).map(eq => ({
+          ...eq,
+          question: {
+            ...eq.question,
+            correctAnswer: undefined, // Hide correct answer
+            options: eq.question.options,
+          },
+        }));
+
         return {
           ...ongoingSession,
           remainingTime: exam.duration - elapsed,
@@ -91,9 +103,7 @@ export class ExamSessionsService {
             duration: exam.duration,
             randomizeQuestions: exam.randomizeQuestions,
           },
-          questions: exam.randomizeQuestions
-            ? this.shuffleArray(exam.questions)
-            : exam.questions,
+          questions: questionsWithoutAnswers,
         };
       } else {
         // Het gio, tu dong timeout
@@ -115,7 +125,19 @@ export class ExamSessionsService {
       },
     });
 
-    // 6. Tra ve session + danh sach cau hoi
+    // 6. Tra ve session + danh sach cau hoi (KHONG bao gom dap an dung)
+    const questionsWithoutAnswers = (exam.randomizeQuestions
+      ? this.shuffleArray(exam.questions)
+      : exam.questions
+    ).map(eq => ({
+      ...eq,
+      question: {
+        ...eq.question,
+        correctAnswer: undefined, // Hide correct answer from student
+        options: eq.question.options,
+      },
+    }));
+
     return {
       ...session,
       remainingTime: exam.duration,
@@ -126,9 +148,7 @@ export class ExamSessionsService {
         randomizeQuestions: exam.randomizeQuestions,
         enableAntiCheat: exam.enableAntiCheat,
       },
-      questions: exam.randomizeQuestions
-        ? this.shuffleArray(exam.questions)
-        : exam.questions,
+      questions: questionsWithoutAnswers,
     };
   }
 
@@ -232,7 +252,7 @@ export class ExamSessionsService {
         // Nhieu dap an dung - cho diem theo ty le dung
         const userAnswers = Array.isArray(userAnswer) ? userAnswer : (userAnswer ? [userAnswer] : []);
         const correctIds = correctOptions.map(opt => opt.id).sort();
-        
+
         if (userAnswers.length === 0) {
           isCorrect = false;
           pointEarned = 0;
@@ -240,7 +260,7 @@ export class ExamSessionsService {
           // Dem so dap an dung user chon
           const correctSelected = userAnswers.filter(id => correctIds.includes(id)).length;
           const wrongSelected = userAnswers.filter(id => !correctIds.includes(id)).length;
-          
+
           // Neu chon sai bat ky dap an nao => 0 diem
           if (wrongSelected > 0) {
             isCorrect = false;
@@ -322,7 +342,7 @@ export class ExamSessionsService {
 
   async getMyExamSessions(userId: string, examId?: string) {
     const where: any = { userId };
-    
+
     if (examId) {
       where.examId = examId;
     }

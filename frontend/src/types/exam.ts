@@ -17,7 +17,7 @@ export interface CreateExamDto {
   questions: ExamQuestion[];
 }
 
-export interface UpdateExamDto extends Partial<CreateExamDto> {}
+export interface UpdateExamDto extends Partial<CreateExamDto> { }
 
 export interface Exam {
   id: string;
@@ -33,6 +33,7 @@ export interface Exam {
   questions: Array<{
     questionId: string;
     point: number;
+    order?: number;
     question: {
       content: string;
       type: string;
@@ -40,6 +41,9 @@ export interface Exam {
   }>;
   openTime?: string;
   closeTime?: string;
+  maxRetake?: number;
+  randomizeQuestions?: boolean;
+  enableAntiCheat?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -89,15 +93,15 @@ export interface ExamResult {
     lastName?: string;
   };
   session?: {
-      exam: {
+    exam: {
+      id: string;
+      title: string;
+      course: {
         id: string;
-        title: string;
-        course: {
-            id: string;
-            name: string;
-            code: string;
-        };
+        name: string;
+        code: string;
       };
+    };
   };
   // Fallback for flat structure if used elsewhere
   exam?: {

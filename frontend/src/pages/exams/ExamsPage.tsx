@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -128,7 +128,7 @@ export default function ExamsPage() {
   const handleOpenEdit = async (exam: Exam) => {
     setIsEditMode(true);
     setEditingId(exam.id);
-    
+
     try {
       const details = await examService.getExamById(exam.id);
       setFormData({
@@ -147,7 +147,7 @@ export default function ExamsPage() {
           order: q.order || index + 1 // Giữ nguyên order hoặc tạo mới từ 1
         })),
       });
-      
+
       const qIds = new Set(details.questions.map(q => q.questionId));
       setSelectedQuestionIds(qIds);
 
@@ -155,10 +155,10 @@ export default function ExamsPage() {
       if (details.courseId) {
         handleCourseChange(details.courseId);
       }
-      
+
       setIsDialogOpen(true);
     } catch (error) {
-        toast({ title: 'Lỗi', description: 'Không thể tải thông tin đề thi' });
+      toast({ title: 'Lỗi', description: 'Không thể tải thông tin đề thi' });
     }
   };
 
@@ -179,7 +179,7 @@ export default function ExamsPage() {
         toast({ title: 'Lỗi', description: 'Vui lòng điền đầy đủ thông tin bắt buộc', variant: 'destructive' });
         return;
       }
-      
+
       const questionsData: ExamQuestion[] = Array.from(selectedQuestionIds).map((id, index) => ({
         questionId: id,
         point: 1, // Default point
@@ -232,8 +232,8 @@ export default function ExamsPage() {
       setSelectedBankId('');
     } catch (error) {
       console.error('❌ Error loading question banks:', error);
-      toast({ 
-        title: 'Lỗi', 
+      toast({
+        title: 'Lỗi',
         description: 'Không thể tải danh sách ngân hàng câu hỏi',
         variant: 'destructive'
       });
@@ -249,8 +249,8 @@ export default function ExamsPage() {
       setBankQuestions(qs);
     } catch (error) {
       console.error('❌ Error loading questions:', error);
-      toast({ 
-        title: 'Lỗi', 
+      toast({
+        title: 'Lỗi',
         description: 'Không thể tải danh sách câu hỏi',
         variant: 'destructive'
       });
@@ -360,62 +360,62 @@ export default function ExamsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Tiêu đề</Label>
-                <Input 
-                  value={formData.title} 
-                  onChange={e => setFormData({...formData, title: e.target.value})} 
+                <Input
+                  value={formData.title}
+                  onChange={e => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Kỳ thi cuối kỳ 2024"
                 />
               </div>
               <div className="space-y-2">
                 <Label>Thời gian (phút)</Label>
-                <Input 
+                <Input
                   type="number"
-                  value={formData.duration} 
-                  onChange={e => setFormData({...formData, duration: Number(e.target.value)})} 
+                  value={formData.duration}
+                  onChange={e => setFormData({ ...formData, duration: Number(e.target.value) })}
                 />
               </div>
               <div className="space-y-2 col-span-2">
                 <Label>Mô tả</Label>
-                <Textarea 
-                  value={formData.description} 
-                  onChange={e => setFormData({...formData, description: e.target.value})} 
+                <Textarea
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
                 />
               </div>
 
               {/* Thời gian thi */}
               <div className="space-y-2">
                 <Label>Thời gian mở thi</Label>
-                <Input 
+                <Input
                   type="datetime-local"
-                  value={formData.openTime ? new Date(formData.openTime).toISOString().slice(0, 16) : ''} 
-                  onChange={e => setFormData({...formData, openTime: e.target.value ? new Date(e.target.value).toISOString() : ''})} 
+                  value={formData.openTime ? new Date(formData.openTime).toISOString().slice(0, 16) : ''}
+                  onChange={e => setFormData({ ...formData, openTime: e.target.value ? new Date(e.target.value).toISOString() : '' })}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Thời gian đóng thi</Label>
-                <Input 
+                <Input
                   type="datetime-local"
-                  value={formData.closeTime ? new Date(formData.closeTime).toISOString().slice(0, 16) : ''} 
-                  onChange={e => setFormData({...formData, closeTime: e.target.value ? new Date(e.target.value).toISOString() : ''})} 
+                  value={formData.closeTime ? new Date(formData.closeTime).toISOString().slice(0, 16) : ''}
+                  onChange={e => setFormData({ ...formData, closeTime: e.target.value ? new Date(e.target.value).toISOString() : '' })}
                 />
               </div>
 
               {/* Cấu hình */}
               <div className="space-y-2">
                 <Label>Số lần thi tối đa</Label>
-                <Input 
+                <Input
                   type="number"
                   min={1}
-                  value={formData.maxRetake} 
-                  onChange={e => setFormData({...formData, maxRetake: Number(e.target.value)})} 
+                  value={formData.maxRetake}
+                  onChange={e => setFormData({ ...formData, maxRetake: Number(e.target.value) })}
                 />
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center space-x-2">
-                  <input 
+                  <input
                     type="checkbox"
                     checked={formData.randomizeQuestions}
-                    onChange={e => setFormData({...formData, randomizeQuestions: e.target.checked})}
+                    onChange={e => setFormData({ ...formData, randomizeQuestions: e.target.checked })}
                     className="h-4 w-4"
                   />
                   <span>Đảo câu hỏi ngẫu nhiên</span>
@@ -423,10 +423,10 @@ export default function ExamsPage() {
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center space-x-2">
-                  <input 
+                  <input
                     type="checkbox"
                     checked={formData.enableAntiCheat}
-                    onChange={e => setFormData({...formData, enableAntiCheat: e.target.checked})}
+                    onChange={e => setFormData({ ...formData, enableAntiCheat: e.target.checked })}
                     className="h-4 w-4"
                   />
                   <span>Bật chống gian lận</span>
@@ -435,17 +435,17 @@ export default function ExamsPage() {
 
               <div className="space-y-2 col-span-2">
                 <Label>Khóa học</Label>
-                <Select 
-                  value={formData.courseId} 
+                <Select
+                  value={formData.courseId}
                   onValueChange={handleCourseChange}
-                  disabled={isEditMode} 
+                  disabled={isEditMode}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn khóa học" />
                   </SelectTrigger>
                   <SelectContent>
                     {courses.map(c => (
-                       <SelectItem key={c.id} value={c.id}>{c.name} ({c.code})</SelectItem>
+                      <SelectItem key={c.id} value={c.id}>{c.name} ({c.code})</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -456,7 +456,7 @@ export default function ExamsPage() {
             {/* Question Selection */}
             <div className="border-t pt-4">
               <h3 className="font-semibold mb-2">Chọn câu hỏi ({selectedQuestionIds.size} đã chọn)</h3>
-              
+
               <div className="flex gap-4 mb-4">
                 <div className="w-1/3">
                   <Label>Ngân hàng câu hỏi</Label>
@@ -488,8 +488,8 @@ export default function ExamsPage() {
                       {bankQuestions.map(q => (
                         <TableRow key={q.id}>
                           <TableCell>
-                            <input 
-                              type="checkbox" 
+                            <input
+                              type="checkbox"
                               checked={selectedQuestionIds.has(q.id)}
                               onChange={() => toggleQuestion(q.id)}
                               className="h-4 w-4"

@@ -82,12 +82,12 @@ const MyResultsPage = () => {
                   <tr key={result.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {result.exam.title}
+                        {result.exam?.title || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-600">
-                        {result.exam.course.name}
+                        {result.exam?.course?.name || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -95,7 +95,7 @@ const MyResultsPage = () => {
                         {result.score.toFixed(1)}%
                       </div>
                       <div className="text-xs text-gray-500">
-                        Đạt: {result.exam.passingScore}%
+                        Đạt: {result.exam?.passingScore || 0}%
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

@@ -1,14 +1,14 @@
 import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { 
-  Library, 
-  Users, 
-  BookOpen, 
-  Database, 
-  FileQuestion, 
-  FileText, 
-  Calendar, 
-  Award, 
+import { NavLink, Outlet } from 'react-router-dom';
+import {
+  Library,
+  Users,
+  BookOpen,
+  Database,
+  FileQuestion,
+  FileText,
+  Calendar,
+  Award,
   LogOut,
   LayoutDashboard
 } from 'lucide-react';
@@ -16,7 +16,6 @@ import { authService } from '../services/auth.service';
 import { cn } from '../lib/utils';
 
 const MainLayout: React.FC = () => {
-  const navigate = useNavigate();
   const user = authService.getCurrentUser();
 
   const handleLogout = () => {
@@ -49,7 +48,7 @@ const MainLayout: React.FC = () => {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             if (item.adminOnly && user?.role !== 'ADMIN') return null;
-            
+
             return (
               <NavLink
                 key={item.path}
@@ -57,8 +56,8 @@ const MainLayout: React.FC = () => {
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
-                    isActive 
-                      ? "bg-blue-50 text-blue-700" 
+                    isActive
+                      ? "bg-blue-50 text-blue-700"
                       : "text-gray-700 hover:bg-gray-100"
                   )
                 }

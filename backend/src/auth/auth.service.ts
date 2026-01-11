@@ -127,7 +127,7 @@ export class AuthService {
     }
 
     // Determine role based on email domain
-    const role = googleUser.email.endsWith('@edu.vn') ? 'ADMIN' : 'STUDENT';
+    const role = googleUser.email.endsWith('@edu.vn') ? 'ADMIN' : 'USER';
 
     const newUser = await this.prisma.user.create({
       data: {

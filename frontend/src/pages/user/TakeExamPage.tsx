@@ -387,7 +387,7 @@ const TakeExamPage = () => {
                   />
                   <div className="flex-1">
                     <span className="font-medium text-gray-900 mr-2">{optionLetter}.</span>
-                    <span className="text-gray-700">{option.text}</span>
+                    <span className="text-gray-700">{option.content}</span>
                   </div>
                 </label>
               );

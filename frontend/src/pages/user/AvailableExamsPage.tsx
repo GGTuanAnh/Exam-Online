@@ -86,7 +86,7 @@ const AvailableExamsPage = () => {
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Users className="w-4 h-4 mr-2" />
-                  <span>Số câu hỏi: {exam.questions?.length || 0}</span>
+                  <span>Số câu hỏi: {exam._count?.questions || 0}</span>
                 </div>
                 {exam.openTime && exam.closeTime && (
                   <div className="text-xs text-gray-500 border-t pt-2 mt-2">

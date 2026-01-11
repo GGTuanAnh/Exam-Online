@@ -85,14 +85,15 @@ export class ExamSessionsService {
         const questionsWithoutAnswers = (exam.randomizeQuestions
           ? this.shuffleArray(exam.questions)
           : exam.questions
-        ).map(eq => ({
-          ...eq,
-          question: {
-            ...eq.question,
-            correctAnswer: undefined, // Hide correct answer
-            options: eq.question.options,
-          },
-        }));
+        ).map(eq => {
+          return {
+            ...eq,
+            question: {
+              ...eq.question,
+              options: eq.question.options.map(({ isCorrect, ...opt }) => opt),
+            },
+          };
+        });
 
         return {
           ...ongoingSession,

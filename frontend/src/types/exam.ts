@@ -46,6 +46,10 @@ export interface Exam {
   enableAntiCheat?: boolean;
   createdAt: string;
   updatedAt: string;
+  _count?: {
+    questions: number;
+    examSessions: number;
+  };
 }
 
 export interface ExamSession {
@@ -72,7 +76,7 @@ export interface ExamSession {
       type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TRUE_FALSE';
       options: Array<{
         id: string;
-        text: string;
+        content: string;
       }>;
     };
   }>;

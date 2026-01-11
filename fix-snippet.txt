@@ -1,0 +1,11 @@
+// Fixed version of the map function
+).map(eq => {
+  const { correctAnswer, ...questionData } = eq.question;
+  return {
+    ...eq,
+    question: {
+      ...questionData,
+      options: eq.question.options.map(({ isCorrect, ...opt }) => opt),
+    },
+  };
+});

@@ -66,7 +66,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       const refreshToken = sessionStorage.getItem('refresh_token');
-      
+
       if (!refreshToken) {
         // Khong co refresh token, dang xuat
         sessionStorage.removeItem('access_token');
@@ -79,7 +79,7 @@ api.interceptors.response.use(
       try {
         // Goi API refresh token
         const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-          refresh_token: refreshToken,
+          refreshToken: refreshToken,
         });
 
         const { access_token } = response.data;
@@ -87,10 +87,10 @@ api.interceptors.response.use(
 
         // Cap nhat header cho request hien tai
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
-        
+
         // Xu ly cac request dang cho
         processQueue(null, access_token);
-        
+
         isRefreshing = false;
 
         // Thu lai request ban dau
@@ -99,12 +99,12 @@ api.interceptors.response.use(
         // Refresh token that bai, dang xuat
         processQueue(refreshError, null);
         isRefreshing = false;
-        
+
         sessionStorage.removeItem('access_token');
         sessionStorage.removeItem('refresh_token');
         sessionStorage.removeItem('user');
         window.location.href = '/login';
-        
+
         return Promise.reject(refreshError);
       }
     }

@@ -12,7 +12,7 @@ import type { Response } from 'express';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   @ApiOperation({ summary: 'Đăng ký tài khoản mới' })
@@ -123,13 +123,5 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async changePassword(@Req() req, @Body() changePasswordDto: ChangePasswordDto) {
     return this.authService.changePassword(req.user.id, changePasswordDto);
-  }
-
-  @Post('refresh')
-  async refreshToken(@Body('refresh_token') refreshToken: string) {
-    if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token là bắt buộc');
-    }
-    return this.authService.refreshAccessToken(refreshToken);
   }
 }

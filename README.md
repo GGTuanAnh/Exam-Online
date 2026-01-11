@@ -77,7 +77,7 @@ Hệ thống thi trắc nghiệm trực tuyến hiện đại, hỗ trợ quản
     ```
     *   Backend sẽ chạy tại: `http://localhost:3000`
     *   Frontend sẽ chạy tại: `http://localhost:80` (hoặc port cấu hình trong nginx)
-    *   API Docs: `http://localhost:3000/api`
+    *   API Docs: `http://localhost:3000/api-docs`
 
 ### Cách 2: Chạy Local (Thủ công)
 

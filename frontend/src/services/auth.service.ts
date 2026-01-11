@@ -52,7 +52,8 @@ export const authService = {
   },
 
   loginWithGoogle() {
-    window.location.href = 'http://localhost:3000/auth/google';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    window.location.href = `${API_BASE_URL}/auth/google`;
   },
 
   handleCallback(token: string, user: string, refreshToken?: string) {
@@ -61,13 +62,13 @@ export const authService = {
       if (refreshToken) {
         sessionStorage.setItem('refresh_token', refreshToken);
       }
-      
+
       // User string from backend is likely base64url encoded
       // We need to decode it properly
       try {
         // Base64Url to Base64 (replace - with +, _ with /)
         const base64 = user.replace(/-/g, '+').replace(/_/g, '/');
-        const userJson = atob(base64); 
+        const userJson = atob(base64);
         sessionStorage.setItem('user', userJson);
         return true;
       } catch (e) {

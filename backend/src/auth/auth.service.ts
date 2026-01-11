@@ -18,8 +18,8 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
-    private mailerService: MailerService 
-  ) {}
+    private mailerService: MailerService
+  ) { }
 
   private issueTokens(user: any) {
     const payload = {
@@ -55,7 +55,7 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
     const verificationToken = uuidv4();
-    
+
     // Tách fullName thành firstName và lastName
     const nameParts = registerDto.fullName.trim().split(' ');
     const firstName = nameParts[0];
@@ -74,8 +74,9 @@ export class AuthService {
       },
     });
 
-    const verificationLink = `http://localhost:3000/auth/verify?token=${verificationToken}`;
-    
+    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:5173';
+    const verificationLink = `${frontendUrl}/verify-email?token=${verificationToken}`;
+
     await this.mailerService.sendMail({
       to: newUser.email,
       subject: 'Xác thực đăng ký tài khoản Exam Online',
@@ -124,6 +125,10 @@ export class AuthService {
     if (user) {
       return user;
     }
+
+    // Determine role based on email domain
+    const role = googleUser.email.endsWith('@edu.vn') ? 'ADMIN' : 'STUDENT';
+
     const newUser = await this.prisma.user.create({
       data: {
         email: googleUser.email,
@@ -135,6 +140,7 @@ export class AuthService {
         providerId: googleUser.providerId,
         isActive: true,
         password: null,
+        role: role,
       },
     });
 
@@ -143,9 +149,9 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    
+
     if (!user || !user.password) {
-      return null; 
+      return null;
     }
 
     const isMatch = await bcrypt.compare(pass, user.password);
@@ -211,7 +217,7 @@ export class AuthService {
   // --- Forgot Password ---
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const { email } = forgotPasswordDto;
-    
+
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -242,7 +248,7 @@ export class AuthService {
     });
 
     const resetLink = `http://localhost:3000/auth/reset-password?token=${resetToken}`;
-    
+
     await this.mailerService.sendMail({
       to: user.email,
       subject: 'Reset mật khẩu - Exam Online',

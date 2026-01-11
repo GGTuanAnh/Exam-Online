@@ -6,7 +6,7 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
 import VerifyEmailPendingPage from './pages/auth/VerifyEmailPendingPage';
-import VerifyEmailSuccessPage from './pages/auth/VerifyEmailSuccessPage';
+import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import UsersPage from './pages/users/UsersPage';
 import CoursesPage from './pages/courses/CoursesPage';
@@ -30,64 +30,64 @@ function App() {
     <BrowserRouter>
       <Toaster />
       <Routes>
-          <Route 
-            path="/login" 
-            element={isAuthenticated ? <Navigate to={defaultRoute} replace /> : <LoginPage />} 
-          />
-          <Route 
-            path="/register" 
-            element={isAuthenticated ? <Navigate to={defaultRoute} replace /> : <RegisterPage />} 
-          />
-          <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route path="/verify-email-pending" element={<VerifyEmailPendingPage />} />
-          <Route path="/verify-email" element={<VerifyEmailSuccessPage />} />
-          
-          {/* Admin Routes */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute requireAdmin>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<DashboardPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="courses" element={<CoursesPage />} />
-            <Route path="question-banks" element={<QuestionBanksPage />} />
-            <Route path="questions" element={<QuestionsPage />} />
-            <Route path="exams" element={<ExamsPage />} />
-            <Route path="exam-sessions" element={<ExamSessionsPage />} />
-            <Route path="exam-results" element={<ExamResultsPage />} />
-          </Route>
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to={defaultRoute} replace /> : <LoginPage />}
+        />
+        <Route
+          path="/register"
+          element={isAuthenticated ? <Navigate to={defaultRoute} replace /> : <RegisterPage />}
+        />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/verify-email-pending" element={<VerifyEmailPendingPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
-          {/* User Routes */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <UserLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AvailableExamsPage />} />
-            <Route path="my-results" element={<MyResultsPage />} />
-          </Route>
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requireAdmin>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<DashboardPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="courses" element={<CoursesPage />} />
+          <Route path="question-banks" element={<QuestionBanksPage />} />
+          <Route path="questions" element={<QuestionsPage />} />
+          <Route path="exams" element={<ExamsPage />} />
+          <Route path="exam-sessions" element={<ExamSessionsPage />} />
+          <Route path="exam-results" element={<ExamResultsPage />} />
+        </Route>
 
-          {/* Exam taking page (fullscreen, no layout) */}
-          <Route
-            path="/take-exam/:examId"
-            element={
-              <ProtectedRoute>
-                <TakeExamPage />
-              </ProtectedRoute>
-            }
-          />
+        {/* User Routes */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <UserLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AvailableExamsPage />} />
+          <Route path="my-results" element={<MyResultsPage />} />
+        </Route>
 
-          {/* Catch all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+        {/* Exam taking page (fullscreen, no layout) */}
+        <Route
+          path="/take-exam/:examId"
+          element={
+            <ProtectedRoute>
+              <TakeExamPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catch all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

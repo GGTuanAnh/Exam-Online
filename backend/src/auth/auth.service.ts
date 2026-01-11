@@ -77,16 +77,29 @@ export class AuthService {
     const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:5173';
     const verificationLink = `${frontendUrl}/verify-email?token=${verificationToken}`;
 
-    await this.mailerService.sendMail({
-      to: newUser.email,
-      subject: 'Xác thực đăng ký tài khoản Exam Online',
-      html: `
-        <h1>Chào ${newUser.firstName || newUser.username},</h1>
-        <p>Cảm ơn bạn đã đăng ký. Vui lòng bấm vào link dưới đây để kích hoạt tài khoản:</p>
-        <a href="${verificationLink}">Bấm vào đây để xác thực</a>
-        <p>Hoặc copy link này: ${verificationLink}</p>
-      `,
-    });
+    // Try to send email, but don't block registration if it fails
+    try {
+      await this.mailerService.sendMail({
+        to: newUser.email,
+        subject: 'Xác thực đăng ký tài khoản Exam Online',
+        html: `
+          <h1>Chào ${newUser.firstName || newUser.username},</h1>
+          <p>Cảm ơn bạn đã đăng ký. Vui lòng bấm vào link dưới đây để kích hoạt tài khoản:</p>
+          <a href="${verificationLink}">Bấm vào đây để xác thực</a>
+          <p>Hoặc copy link này: ${verificationLink}</p>
+        `,
+      });
+    } catch (emailError) {
+      // If email fails, auto-activate user to prevent blocking registration
+      console.error('Email sending failed, auto-activating user:', emailError);
+      await this.prisma.user.update({
+        where: { id: newUser.id },
+        data: { isActive: true, verificationToken: null },
+      });
+      return {
+        message: 'Đăng ký thành công! Tài khoản đã được kích hoạt tự động.',
+      };
+    }
 
     return {
       message: SUCCESS_MESSAGES.REGISTER_SUCCESS,

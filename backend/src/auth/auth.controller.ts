@@ -7,6 +7,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 import type { Response } from 'express';
 
 @ApiTags('auth')
@@ -55,7 +56,7 @@ export class AuthController {
   @Get('google')
   @ApiOperation({ summary: 'Bắt đầu OAuth2.0 với Google' })
   @ApiResponse({ status: 302, description: 'Redirect đến Google login' })
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuth(@Req() req) {
   }
 

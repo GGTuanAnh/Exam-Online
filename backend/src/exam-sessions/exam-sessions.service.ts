@@ -246,8 +246,10 @@ export class ExamSessionsService {
       // Cham diem theo loai cau hoi
       if (question.type === 'SINGLE_CHOICE' || question.type === 'TRUE_FALSE') {
         // 1 dap an dung
+        // Frontend gui answer duoi dang array, can normalize
+        const normalizedAnswer = Array.isArray(userAnswer) ? userAnswer[0] : userAnswer;
         const correctOptionId = correctOptions[0]?.id;
-        isCorrect = userAnswer === correctOptionId;
+        isCorrect = normalizedAnswer === correctOptionId;
         pointEarned = isCorrect ? examQuestion.point : 0;
       } else if (question.type === 'MULTIPLE_CHOICE') {
         // Nhieu dap an dung - cho diem theo ty le dung

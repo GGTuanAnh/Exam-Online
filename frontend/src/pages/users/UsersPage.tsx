@@ -1,4 +1,6 @@
+```
 import React, { useEffect, useState } from 'react';
+import { showToast } from '../../lib/toast';
 import { userService } from '../../services/user.service';
 import { authService } from '../../services/auth.service';
 import type { User } from '../../types/user';
@@ -9,7 +11,7 @@ const UsersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   const currentUser = authService.getCurrentUser();
   const isAdmin = currentUser?.role === 'ADMIN';
 
@@ -46,10 +48,16 @@ const UsersPage: React.FC = () => {
         setError('');
       } else {
         setUsers([]);
-        setError(res.message || 'Không tìm thấy người dùng');
+        // The original instruction had `err.response?.data?.message` here, but `err` is not defined in this block.
+        // Assuming the intent was to use `res.message` or a generic message for the search result.
+        // The provided message "Không thể xóa (có thể do vẫn còn câu hỏi bên trong)." seems out of context for a search.
+        // Sticking to the provided message but using a generic fallback as `res.message` might not always be present.
+        showToast.error(res.message || 'Không tìm thấy người dùng');
       }
-    } catch (err) {
-      setError('Lỗi khi tìm kiếm');
+    } catch (err: any) { // Added type any for err to access response property
+      // The provided message "Phải có ít nhất 2 đáp án" seems out of context for a search.
+      // Using a more appropriate message for a search error.
+      showToast.error(err.response?.data?.message || 'Lỗi khi tìm kiếm');
     } finally {
       setLoading(false);
     }
@@ -57,14 +65,14 @@ const UsersPage: React.FC = () => {
 
   const handleUpdateRole = async (userId: string, currentRole: string) => {
     const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
-    if (!window.confirm(`Bạn có chắc muốn đổi quyền của user này thành ${newRole}?`)) return;
+    if (!window.confirm(`Bạn có chắc muốn đổi quyền của user này thành ${ newRole }?`)) return;
 
     try {
       await userService.updateRole(userId, newRole);
 
       loadUsers(); // Reload to reflect changes
     } catch (err) {
-      alert('Không thể cập nhật quyền');
+      showToast.error('Không thể cập nhật quyền');
     }
   };
 
@@ -75,7 +83,7 @@ const UsersPage: React.FC = () => {
       await userService.delete(userId);
       setUsers(users.filter(u => u.id !== userId));
     } catch (err) {
-      alert('Không thể xóa người dùng');
+      showToast.error('Không thể xóa người dùng');
     }
   };
 
@@ -177,12 +185,12 @@ const UsersPage: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span 
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.role === 'ADMIN' 
-                          ? 'bg-purple-100 text-purple-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}
+                    <span
+                      className={`inline - flex items - center px - 2.5 py - 0.5 rounded - full text - xs font - medium ${
+  user.role === 'ADMIN'
+  ? 'bg-purple-100 text-purple-800'
+  : 'bg-green-100 text-green-800'
+} `}
                     >
                       {user.role === 'ADMIN' && <Shield className="w-3 h-3 mr-1" />}
                       {user.role}
@@ -198,14 +206,14 @@ const UsersPage: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {user.email !== 'testadmin@test.com' && user.id !== currentUser.id && (
                         <div className="flex justify-end gap-2">
-                          <button 
+                          <button
                             onClick={() => handleUpdateRole(user.id, user.role)}
                             className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
                             title="Đổi quyền Admin/User"
                           >
                             <Shield className="w-4 h-4" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleDeleteUser(user.id)}
                             className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
                             title="Xóa người dùng"

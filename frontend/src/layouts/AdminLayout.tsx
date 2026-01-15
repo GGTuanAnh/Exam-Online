@@ -1,13 +1,13 @@
 import { Outlet, Link } from 'react-router-dom';
 import { authService } from '../services/auth.service';
-import { 
-  LayoutDashboard, 
-  Users, 
-  BookOpen, 
-  Database, 
-  HelpCircle, 
-  FileText, 
-  ClipboardList, 
+import {
+  LayoutDashboard,
+  Users,
+  BookOpen,
+  Database,
+  HelpCircle,
+  FileText,
+  ClipboardList,
   Trophy,
   LogOut,
   User
@@ -35,45 +35,43 @@ const AdminLayout = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <LayoutDashboard className="w-8 h-8 text-indigo-600" />
-              <h1 className="text-xl font-bold text-gray-900">Admin - Quản lý Thi</h1>
+      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md fixed top-4 left-4 right-4 rounded-xl backdrop-blur-md px-4 py-2">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <LayoutDashboard className="w-8 h-8 text-white" />
+            <h1 className="text-xl font-bold">Admin - Quản lý Thi</h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 text-sm">
+              <User className="w-5 h-5 text-white/80" />
+              <span className="font-medium">{user?.name || user?.email}</span>
+              <span className="px-2 py-1 text-xs font-semibold bg-white/20 rounded-full">Admin</span>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm">
-                <User className="w-5 h-5 text-gray-500" />
-                <span className="font-medium text-gray-700">{user?.name || user?.email}</span>
-                <span className="px-2 py-1 text-xs font-semibold text-indigo-600 bg-indigo-100 rounded-full">
-                  Admin
-                </span>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Đăng xuất</span>
-              </button>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white hover:bg-red-100 hover:text-red-600 transition-colors rounded"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Đăng xuất</span>
+            </button>
           </div>
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex pt-20">
         {/* Sidebar */}
-        <aside className="w-64 bg-white shadow-sm min-h-[calc(100vh-4rem)]">
+        <aside className="w-64 bg-white/80 backdrop-blur-md shadow-sm rounded-xl min-h-[calc(100vh-8rem)] fixed top-20 left-4 mt-4 overflow-y-auto">
           <nav className="p-4 space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
+              const isActive = window.location.pathname === item.path;
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-200
+                    ${isActive ? 'bg-indigo-600 text-white shadow-inner' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-600'}
+                  `}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
@@ -84,7 +82,7 @@ const AdminLayout = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-8 ml-72">
           <Outlet />
         </main>
       </div>

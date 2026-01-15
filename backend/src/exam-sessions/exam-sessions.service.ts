@@ -86,10 +86,11 @@ export class ExamSessionsService {
           ? this.shuffleArray(exam.questions)
           : exam.questions
         ).map(eq => {
+          const { correctAnswer, ...questionData } = eq.question;
           return {
             ...eq,
             question: {
-              ...eq.question,
+              ...questionData,
               options: eq.question.options.map(({ isCorrect, ...opt }) => opt),
             },
           };
@@ -130,14 +131,16 @@ export class ExamSessionsService {
     const questionsWithoutAnswers = (exam.randomizeQuestions
       ? this.shuffleArray(exam.questions)
       : exam.questions
-    ).map(eq => ({
-      ...eq,
-      question: {
-        ...eq.question,
-        correctAnswer: undefined, // Hide correct answer from student
-        options: eq.question.options,
-      },
-    }));
+    ).map(eq => {
+      const { correctAnswer, ...questionData } = eq.question;
+      return {
+        ...eq,
+        question: {
+          ...questionData,
+          options: eq.question.options.map(({ isCorrect, ...opt }) => opt),
+        },
+      };
+    });
 
     return {
       ...session,

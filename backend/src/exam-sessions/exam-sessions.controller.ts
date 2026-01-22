@@ -21,7 +21,7 @@ import { Role, ExamStatus } from '@prisma/client';
 @Controller('exam-sessions')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ExamSessionsController {
-  constructor(private readonly examSessionsService: ExamSessionsService) {}
+  constructor(private readonly examSessionsService: ExamSessionsService) { }
 
   @Get()
   @Roles(Role.ADMIN)
@@ -56,5 +56,10 @@ export class ExamSessionsController {
   @Get(':sessionId')
   getSessionDetail(@Request() req, @Param('sessionId') sessionId: string) {
     return this.examSessionsService.getSessionDetail(req.user.userId, sessionId);
+  }
+
+  @Get(':sessionId/resume')
+  resumeSession(@Request() req, @Param('sessionId') sessionId: string) {
+    return this.examSessionsService.resumeSession(req.user.userId, sessionId);
   }
 }

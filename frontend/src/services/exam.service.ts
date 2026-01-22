@@ -61,25 +61,30 @@ export const examService = {
     // Map sessions to ExamResult structure for frontend compatibility
     // The backend returns Session with nested Result and Exam
     return response.data.map((session: any) => {
-        // If session has no result (e.g. IN_PROGRESS), we might filter it out or show as incomplete
-        // Assuming we only want completed results here or we adapt UI
-        const result = session.result || {};
-        return {
-            id: result.id || session.id, // Prefer result ID
-            score: result.score || 0,
-            isPassed: result.status === 'PASSED',
-            completedAt: session.endTime || result.submittedAt,
-            submittedAt: result.submittedAt,
-            status: result.status || session.status, // PASSED/FAILED or COMPLETED
-            exam: session.exam, // Exam details attached
-            user: session.user // If available
-        } as ExamResult;
+      // If session has no result (e.g. IN_PROGRESS), we might filter it out or show as incomplete
+      // Assuming we only want completed results here or we adapt UI
+      const result = session.result || {};
+      return {
+        id: result.id || session.id, // Prefer result ID
+        score: result.score || 0,
+        isPassed: result.status === 'PASSED',
+        completedAt: session.endTime || result.submittedAt,
+        submittedAt: result.submittedAt,
+        status: result.status || session.status, // PASSED/FAILED or COMPLETED
+        exam: session.exam, // Exam details attached
+        user: session.user // If available
+      } as ExamResult;
     }).filter((r: ExamResult) => r.status && !['IN_PROGRESS', 'NOT_STARTED'].includes(String(r.status))); // Optional: hide incomplete sessions
   },
 
   // Start an exam session
-  async startExam(examId: string) {
-    const response = await api.post<ExamSession>('/exam-sessions/start', { examId });
+  async startExam(examId?: string, examShiftId?: string, password?: string) {
+    const payload: any = {};
+    if (examId) payload.examId = examId;
+    if (examShiftId) payload.examShiftId = examShiftId;
+    if (password) payload.password = password;
+
+    const response = await api.post<ExamSession>('/exam-sessions/start', payload);
     return response.data;
   },
 
@@ -105,6 +110,12 @@ export const examService = {
   // Get session details (re-join)
   async getSession(sessionId: string) {
     const response = await api.get<ExamSession>(`/exam-sessions/${sessionId}`);
+    return response.data;
+  },
+
+  // Resume session (for taking exam)
+  async resumeSession(sessionId: string) {
+    const response = await api.get<ExamSession>(`/exam-sessions/${sessionId}/resume`);
     return response.data;
   }
 };

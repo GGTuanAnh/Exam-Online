@@ -15,21 +15,22 @@ import { ExamResultsModule } from './exam-results/exam-results.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PartsModule } from './parts/parts.module';
 import { UsersModule } from './users/users.module';
+import { ExamShiftsModule } from './exam-shifts/exam-shifts.module';
 import { PrismaService } from './prisma.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ 
+    ConfigModule.forRoot({
       isGlobal: true,
     }),
     PassportModule.register({ session: false }),
-    
+
     // Rate Limiting: 100 requests per 60 seconds (increased for development)
     ThrottlerModule.forRoot([{
       ttl: 60000, // 60 seconds
       limit: 100, // 100 requests (10x higher for development/testing)
     }]),
-    
+
     // Cấu hình Mailer
     MailerModule.forRoot({
       transport: {
@@ -56,6 +57,7 @@ import { PrismaService } from './prisma.service';
     NotificationsModule,
     PartsModule,
     UsersModule,
+    ExamShiftsModule,
   ],
   controllers: [],
   providers: [
@@ -67,4 +69,4 @@ import { PrismaService } from './prisma.service';
     }] : []),
   ],
 })
-export class AppModule {}
+export class AppModule { }

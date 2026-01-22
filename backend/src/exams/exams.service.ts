@@ -7,7 +7,7 @@ import { ERROR_MESSAGES } from '../common/constants/messages.constants';
 
 @Injectable()
 export class ExamsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(createExamDto: CreateExamDto) {
     const { questions, courseId, openTime, closeTime, ...examData } = createExamDto;
@@ -50,8 +50,6 @@ export class ExamsService {
       data: {
         ...examData,
         courseId,
-        openTime: openTime ? new Date(openTime) : null,
-        closeTime: closeTime ? new Date(closeTime) : null,
         questions: {
           create: questions.map((q, index) => ({
             questionId: q.questionId,
@@ -82,19 +80,19 @@ export class ExamsService {
 
   async findAll(query?: { courseId?: string; available?: boolean }) {
     const where: any = {};
-    
+
     if (query?.courseId) {
       where.courseId = query.courseId;
     }
 
     // Loc de thi kha dung (dang trong thoi gian mo)
-    if (query?.available === true) {
-      const now = new Date();
-      where.AND = [
-        { openTime: { lte: now } },
-        { closeTime: { gte: now } },
-      ];
-    }
+    // if (query?.available === true) {
+    //   const now = new Date();
+    //   where.AND = [
+    //     { openTime: { lte: now } },
+    //     { closeTime: { gte: now } },
+    //   ];
+    // }
 
     return this.prisma.exam.findMany({
       where,
@@ -204,12 +202,12 @@ export class ExamsService {
       ...examData,
     };
 
-    if (openTime !== undefined) {
-      updateData.openTime = openTime ? new Date(openTime) : null;
-    }
-    if (closeTime !== undefined) {
-      updateData.closeTime = closeTime ? new Date(closeTime) : null;
-    }
+    // if (openTime !== undefined) {
+    //   updateData.openTime = openTime ? new Date(openTime) : null;
+    // }
+    // if (closeTime !== undefined) {
+    //   updateData.closeTime = closeTime ? new Date(closeTime) : null;
+    // }
 
     // Neu co update questions, xoa het roi tao lai
     if (questions) {

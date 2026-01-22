@@ -28,7 +28,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Edit, Trash, Plus } from 'lucide-react';
+import { Edit, Trash, Plus, Calendar } from 'lucide-react';
 import { examService } from '@/services/exam.service';
 import { courseService } from '@/services/course.service';
 import { questionBankService } from '@/services/question-bank.service';
@@ -37,6 +37,7 @@ import type { Exam, CreateExamDto, ExamQuestion } from '@/types/exam';
 import type { Course } from '@/types/course';
 import type { QuestionBank } from '@/types/question-bank';
 import type { Question } from '@/types/question';
+import { ExamShiftsDialog } from './ExamShiftsDialog';
 
 export default function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
@@ -48,6 +49,10 @@ export default function ExamsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Shift Dialog State
+  const [isShiftDialogOpen, setIsShiftDialogOpen] = useState(false);
+  const [selectedExamForShift, setSelectedExamForShift] = useState<{ id: string; title: string } | null>(null);
 
   // Form State
   const [formData, setFormData] = useState<Partial<CreateExamDto>>({
@@ -112,8 +117,7 @@ export default function ExamsPage() {
       description: '',
       duration: 60,
       courseId: '',
-      openTime: '',
-      closeTime: '',
+      // openTime/closeTime removed
       maxRetake: 1,
       randomizeQuestions: false,
       enableAntiCheat: false,
@@ -136,8 +140,7 @@ export default function ExamsPage() {
         description: details.description,
         duration: details.duration,
         courseId: details.courseId,
-        openTime: details.openTime || '',
-        closeTime: details.closeTime || '',
+        // openTime/closeTime removed
         maxRetake: details.maxRetake || 1,
         randomizeQuestions: details.randomizeQuestions || false,
         enableAntiCheat: details.enableAntiCheat || false,
@@ -160,6 +163,11 @@ export default function ExamsPage() {
     } catch (error) {
       toast({ title: 'Lỗi', description: 'Không thể tải thông tin đề thi' });
     }
+  };
+
+  const handleOpenShifts = (exam: Exam) => {
+    setSelectedExamForShift({ id: exam.id, title: exam.title });
+    setIsShiftDialogOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -197,8 +205,7 @@ export default function ExamsPage() {
         duration: Number(formData.duration),
         courseId: formData.courseId!,
         questions: questionsData,
-        openTime: formData.openTime || undefined,
-        closeTime: formData.closeTime || undefined,
+        // openTime/closeTime removed
         maxRetake: formData.maxRetake || 1,
         randomizeQuestions: formData.randomizeQuestions || false,
         enableAntiCheat: formData.enableAntiCheat || false,
@@ -305,7 +312,8 @@ export default function ExamsPage() {
                   <TableHead>Tiêu đề</TableHead>
                   <TableHead>Khóa học</TableHead>
                   <TableHead>Thời gian</TableHead>
-                  <TableHead>Lịch thi</TableHead>
+                  {/* Lịch thi column removed/changed intent */}
+                  <TableHead>Ca thi</TableHead>
                   <TableHead>Số câu</TableHead>
                   <TableHead>Thao tác</TableHead>
                 </TableRow>
@@ -316,15 +324,10 @@ export default function ExamsPage() {
                     <TableCell className="font-medium">{exam.title}</TableCell>
                     <TableCell>{exam.course?.name || 'N/A'}</TableCell>
                     <TableCell>{exam.duration} phút</TableCell>
-                    <TableCell className="text-xs">
-                      {exam.openTime && exam.closeTime ? (
-                        <>
-                          <div>Mở: {new Date(exam.openTime).toLocaleString('vi-VN')}</div>
-                          <div>Đóng: {new Date(exam.closeTime).toLocaleString('vi-VN')}</div>
-                        </>
-                      ) : (
-                        <span className="text-gray-400">Chưa đặt lịch</span>
-                      )}
+                    <TableCell>
+                      <Button variant="outline" size="sm" onClick={() => handleOpenShifts(exam)} className="text-blue-600 border-blue-200 hover:bg-blue-50">
+                        <Calendar className="w-4 h-4 mr-2" /> Quản lý Ca thi
+                      </Button>
                     </TableCell>
                     <TableCell>{exam.questions?.length || 0}</TableCell>
                     <TableCell>
@@ -339,13 +342,14 @@ export default function ExamsPage() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {exams.length === 0 && <TableRow><TableCell colSpan={5} className="text-center">Không tìm thấy đề thi nào</TableCell></TableRow>}
+                {exams.length === 0 && <TableRow><TableCell colSpan={6} className="text-center">Không tìm thấy đề thi nào</TableCell></TableRow>}
               </TableBody>
             </Table>
           )}
         </CardContent>
       </Card>
 
+      {/* Main Exam Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -382,23 +386,7 @@ export default function ExamsPage() {
                 />
               </div>
 
-              {/* Thời gian thi */}
-              <div className="space-y-2">
-                <Label>Thời gian mở thi</Label>
-                <Input
-                  type="datetime-local"
-                  value={formData.openTime ? new Date(formData.openTime).toISOString().slice(0, 16) : ''}
-                  onChange={e => setFormData({ ...formData, openTime: e.target.value ? new Date(e.target.value).toISOString() : '' })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Thời gian đóng thi</Label>
-                <Input
-                  type="datetime-local"
-                  value={formData.closeTime ? new Date(formData.closeTime).toISOString().slice(0, 16) : ''}
-                  onChange={e => setFormData({ ...formData, closeTime: e.target.value ? new Date(e.target.value).toISOString() : '' })}
-                />
-              </div>
+              {/* Time Fields Removed - Now in Shifts */}
 
               {/* Cấu hình */}
               <div className="space-y-2">
@@ -519,6 +507,16 @@ export default function ExamsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Shifts Dialog */}
+      {selectedExamForShift && (
+        <ExamShiftsDialog
+          isOpen={isShiftDialogOpen}
+          onClose={() => setIsShiftDialogOpen(false)}
+          examId={selectedExamForShift.id}
+          examTitle={selectedExamForShift.title}
+        />
+      )}
     </div>
   );
 }

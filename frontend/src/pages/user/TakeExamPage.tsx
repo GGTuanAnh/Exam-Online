@@ -7,7 +7,7 @@ import type { ExamSession } from '../../types/exam';
 import ConfirmModal from '../../components/ConfirmModal';
 
 const TakeExamPage = () => {
-  const { examId } = useParams();
+  const { examId, sessionId } = useParams();
   const navigate = useNavigate();
 
   const [session, setSession] = useState<ExamSession | null>(null);
@@ -25,10 +25,12 @@ const TakeExamPage = () => {
   const [unansweredCount, setUnansweredCount] = useState(0);
 
   useEffect(() => {
-    if (examId) {
+    if (sessionId) {
+      resumeExamSession();
+    } else if (examId) {
       startExamSession();
     }
-  }, [examId]);
+  }, [examId, sessionId]);
 
   // Timer countdown
   useEffect(() => {
@@ -164,13 +166,32 @@ const TakeExamPage = () => {
       if (!examId) return;
       const data = await examService.startExam(examId);
       setSession(data);
-      // Backend returns duration in minutes usually, but check response structure
-      // Wait, remainingTime in service interface I said minutes, but backend logic returns exam.duration which usually is minutes. 
-      // Need to convert to seconds.
-      setTimeRemaining(data.exam.duration * 60);
+      // Use dynamic remaining time (minutes -> seconds)
+      const remainingMinutes = (data as any).remainingTime ?? data.exam.duration;
+      setTimeRemaining(Math.floor(remainingMinutes * 60));
       setLoading(false);
     } catch (error: any) {
       showToast.error(error.response?.data?.message || 'Không thể bắt đầu bài thi');
+      navigate('/');
+    }
+  };
+
+  const resumeExamSession = async () => {
+    try {
+      if (!sessionId) return;
+      const data = await examService.resumeSession(sessionId);
+      setSession(data);
+
+      if (data.currentAnswers) {
+        setAnswers(data.currentAnswers as any);
+      }
+
+      // Use dynamic remaining time
+      const remainingMinutes = (data as any).remainingTime ?? data.exam.duration;
+      setTimeRemaining(Math.floor(remainingMinutes * 60));
+      setLoading(false);
+    } catch (error: any) {
+      showToast.error(error.response?.data?.message || 'Không thể tiếp tục bài thi');
       navigate('/');
     }
   };

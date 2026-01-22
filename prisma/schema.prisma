@@ -170,8 +170,6 @@ model Exam {
   courseId    String  @map("course_id")
 
   // Cấu hình bài thi
-  openTime  DateTime? @map("open_time") // Thời gian mở đề
-  closeTime DateTime? @map("close_time") // Thời gian đóng đề
   maxRetake Int       @default(1) @map("max_retake") // Số lần được phép thi
 
   // Cấu hình nâng cao
@@ -183,10 +181,31 @@ model Exam {
   // Quan hệ
   course       Course         @relation(fields: [courseId], references: [id])
   questions    ExamQuestion[] // Danh sách câu hỏi trong đề
-  examSessions ExamSession[] // Các lượt thi của sinh viên
-  examResults  ExamResult[] // Kết quả thi của đề này
+  examSessions ExamSession[] // Các lượt thi (nếu thi tự do không cần shift)
+  shifts       ExamShift[]   // Các ca thi
+  examResults  ExamResult[]
 
   @@map("exams")
+}
+
+model ExamShift {
+  id          String   @id @default(uuid())
+  title       String   // Tên ca: "Ca sáng K66", "Thi lại Lần 1"
+  examId      String   @map("exam_id")
+  
+  startTime   DateTime @map("start_time") // Bắt đầu mở ca
+  endTime     DateTime @map("end_time")   // Kết thúc ca
+  
+  password    String?  // Mật khẩu ca thi
+  isActive    Boolean  @default(true) @map("is_active")
+
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Quan hệ
+  exam        Exam          @relation(fields: [examId], references: [id], onDelete: Cascade)
+  sessions    ExamSession[]
+
+  @@map("exam_shifts")
 }
 
 // Bảng trung gian: Câu hỏi trong đề thi (để lưu điểm riêng cho câu hỏi trong đề này)
@@ -207,6 +226,10 @@ model ExamSession {
   id        String     @id @default(uuid())
   examId    String     @map("exam_id")
   userId    String     @map("user_id")
+  
+  // Link to Shift (nếu thi theo ca)
+  examShiftId String?    @map("exam_shift_id")
+  
   startTime DateTime   @default(now()) @map("start_time")
   endTime   DateTime?  @map("end_time") // Thời điểm nộp bài thực tế
   status    ExamStatus @default(IN_PROGRESS)
@@ -216,9 +239,10 @@ model ExamSession {
   currentAnswers Json? @map("current_answers")
 
   // Quan hệ
-  exam   Exam        @relation(fields: [examId], references: [id])
-  user   User        @relation(fields: [userId], references: [id])
-  result ExamResult?
+  exam      Exam        @relation(fields: [examId], references: [id])
+  examShift ExamShift?  @relation(fields: [examShiftId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
+  result    ExamResult?
 
   @@map("exam_sessions")
 }

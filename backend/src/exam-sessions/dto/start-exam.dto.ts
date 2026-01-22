@@ -1,8 +1,16 @@
 // backend/src/exam-sessions/dto/start-exam.dto.ts
-import { IsUUID, IsNotEmpty } from 'class-validator';
+import { IsUUID, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class StartExamDto {
   @IsUUID()
-  @IsNotEmpty()
-  examId: string;
+  @IsOptional()
+  examId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  examShiftId?: string;
+
+  @IsString()
+  @IsOptional()
+  password?: string;
 }

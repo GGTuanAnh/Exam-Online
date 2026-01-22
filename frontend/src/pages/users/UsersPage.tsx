@@ -1,4 +1,4 @@
-```
+
 import React, { useEffect, useState } from 'react';
 import { showToast } from '../../lib/toast';
 import { userService } from '../../services/user.service';
@@ -186,11 +186,11 @@ const UsersPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`inline - flex items - center px - 2.5 py - 0.5 rounded - full text - xs font - medium ${
-  user.role === 'ADMIN'
-  ? 'bg-purple-100 text-purple-800'
-  : 'bg-green-100 text-green-800'
-} `}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        user.role === 'ADMIN'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}
                     >
                       {user.role === 'ADMIN' && <Shield className="w-3 h-3 mr-1" />}
                       {user.role}

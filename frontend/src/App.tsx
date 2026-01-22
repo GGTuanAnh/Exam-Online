@@ -83,6 +83,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/take-exam/session/:sessionId"
+          element={
+            <ProtectedRoute>
+              <TakeExamPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -66,6 +66,18 @@ Hệ thống thi trắc nghiệm trực tuyến hiện đại, hỗ trợ quản
     git clone https://github.com/GGTuanAnh/Exam-Online.git
     cd Exam-Online
     ```
+ ## 🧪 Hướng dẫn Kiểm thử (Testing)
+
+Dự án này đi kèm với một kịch bản kiểm thử thủ công chi tiết, bao gồm các bước từ Admin tạo đề đến Học sinh làm bài và chấm điểm.
+
+👉 **[Xem chi tiết tại TEST_PLAN.md](./TEST_PLAN.md)**
+
+---
+
+## 👨‍💻 Tác giả
+
+Phát triển bởi: **Nhóm Đồ án Liên ngành**
+Liên hệ: `tuans@edu.vn` (Example)
 
 2.  **Cấu hình môi trường**
     *   Copy file `.env.example` thành `.env` ở root folder.

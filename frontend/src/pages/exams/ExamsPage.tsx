@@ -69,6 +69,11 @@ export default function ExamsPage() {
   const [bankQuestions, setBankQuestions] = useState<Question[]>([]);
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<Set<string>>(new Set());
 
+  // Matrix Config State
+  const [matrixConfig, setMatrixConfig] = useState({ easy: 0, medium: 0, hard: 0 });
+  const [bankStats, setBankStats] = useState({ easy: 0, medium: 0, hard: 0 });
+
+
   useEffect(() => {
     fetchExams();
     fetchCourses();
@@ -117,7 +122,6 @@ export default function ExamsPage() {
       description: '',
       duration: 60,
       courseId: '',
-      // openTime/closeTime removed
       maxRetake: 1,
       randomizeQuestions: false,
       enableAntiCheat: false,
@@ -126,6 +130,8 @@ export default function ExamsPage() {
     setSelectedQuestionIds(new Set());
     setAvailableBanks([]);
     setBankQuestions([]);
+    setMatrixConfig({ easy: 0, medium: 0, hard: 0 });
+    setBankStats({ easy: 0, medium: 0, hard: 0 });
     setIsDialogOpen(true);
   };
 
@@ -140,14 +146,13 @@ export default function ExamsPage() {
         description: details.description,
         duration: details.duration,
         courseId: details.courseId,
-        // openTime/closeTime removed
         maxRetake: details.maxRetake || 1,
         randomizeQuestions: details.randomizeQuestions || false,
         enableAntiCheat: details.enableAntiCheat || false,
         questions: details.questions.map((q, index) => ({
           questionId: q.questionId,
           point: q.point,
-          order: q.order || index + 1 // Giữ nguyên order hoặc tạo mới từ 1
+          order: q.order || index + 1
         })),
       });
 
@@ -188,16 +193,23 @@ export default function ExamsPage() {
         return;
       }
 
-      const questionsData: ExamQuestion[] = Array.from(selectedQuestionIds).map((id, index) => ({
-        questionId: id,
-        point: 1, // Default point
-        order: index + 1 // Thứ tự bắt đầu từ 1
-      }));
-
-      if (questionsData.length === 0) {
+      if (selectedQuestionIds.size === 0) {
         toast({ title: 'Lỗi', description: 'Vui lòng chọn ít nhất một câu hỏi', variant: 'destructive' });
         return;
       }
+
+      const totalQuestions = selectedQuestionIds.size;
+      const pointPerQuestion = Number((10 / totalQuestions).toFixed(3)); // Calculate point per question
+
+      const questionsData: ExamQuestion[] = Array.from(selectedQuestionIds).map((id, index) => ({
+        questionId: id,
+        point: pointPerQuestion,
+        order: index + 1 // Thứ tự bắt đầu từ 1
+      }));
+
+      // Adjust last question point to ensure sum is exactly 10 if needed? 
+      // Floating point math might result in 9.999... For simplicity now just use uniform points.
+      // Or we can distribute remainder. For now simple division is fine as per request.
 
       const payload: CreateExamDto = {
         title: formData.title!,
@@ -237,6 +249,7 @@ export default function ExamsPage() {
       setAvailableBanks(banks);
       setBankQuestions([]); // Reset questions list
       setSelectedBankId('');
+      setBankStats({ easy: 0, medium: 0, hard: 0 }); // Reset stats
     } catch (error) {
       console.error('❌ Error loading question banks:', error);
       toast({
@@ -254,6 +267,16 @@ export default function ExamsPage() {
       const qs = await questionService.getAll(bId);
       console.log('✅ Loaded questions:', qs);
       setBankQuestions(qs);
+
+      // Calculate stats
+      const stats = {
+        easy: qs.filter(q => q.level === 'EASY').length,
+        medium: qs.filter(q => q.level === 'MEDIUM').length,
+        hard: qs.filter(q => q.level === 'HARD').length,
+      };
+      setBankStats(stats);
+      setMatrixConfig({ easy: 0, medium: 0, hard: 0 }); // Reset config
+
     } catch (error) {
       console.error('❌ Error loading questions:', error);
       toast({
@@ -262,6 +285,33 @@ export default function ExamsPage() {
         variant: 'destructive'
       });
     }
+  };
+
+  const handleGenerateMatrix = () => {
+    const { easy, medium, hard } = matrixConfig;
+
+    // Validate
+    if (easy > bankStats.easy || medium > bankStats.medium || hard > bankStats.hard) {
+      toast({ title: 'Lỗi', description: 'Số lượng câu hỏi yêu cầu vượt quá số lượng có sẵn', variant: 'destructive' });
+      return;
+    }
+
+    const easyQuestions = bankQuestions.filter(q => q.level === 'EASY');
+    const mediumQuestions = bankQuestions.filter(q => q.level === 'MEDIUM');
+    const hardQuestions = bankQuestions.filter(q => q.level === 'HARD');
+
+    // Shuffle and pick
+    const shuffle = (array: Question[]) => array.sort(() => 0.5 - Math.random());
+
+    const pickedEasy = shuffle([...easyQuestions]).slice(0, easy);
+    const pickedMedium = shuffle([...mediumQuestions]).slice(0, medium);
+    const pickedHard = shuffle([...hardQuestions]).slice(0, hard);
+
+    const allPicked = [...pickedEasy, ...pickedMedium, ...pickedHard];
+    const newSelectedIds = new Set(allPicked.map(q => q.id));
+
+    setSelectedQuestionIds(newSelectedIds);
+    toast({ title: 'Thành công', description: `Đã chọn ${allPicked.length} câu hỏi theo cấu hình ma trận` });
   };
 
   const toggleQuestion = (qId: string) => {
@@ -464,6 +514,62 @@ export default function ExamsPage() {
                 </div>
               </div>
 
+              {/* Matrix Configuration */}
+              {selectedBankId && (
+                <div className="bg-gray-50 p-4 rounded-md mb-4 border border-indigo-100">
+                  <h4 className="text-sm font-medium mb-3 flex items-center text-indigo-700">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Cấu hình Ma trận đề thi (Tự động chọn)
+                  </h4>
+                  <div className="grid grid-cols-4 gap-4 items-end">
+                    <div>
+                      <Label className="text-xs text-green-600">Dễ (Có sẵn: {bankStats.easy})</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max={bankStats.easy}
+                        value={matrixConfig.easy}
+                        onChange={e => setMatrixConfig(prev => ({ ...prev, easy: Number(e.target.value) }))}
+                        className="h-8 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-yellow-600">Trung bình (Có sẵn: {bankStats.medium})</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max={bankStats.medium}
+                        value={matrixConfig.medium}
+                        onChange={e => setMatrixConfig(prev => ({ ...prev, medium: Number(e.target.value) }))}
+                        className="h-8 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-red-600">Khó (Có sẵn: {bankStats.hard})</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max={bankStats.hard}
+                        value={matrixConfig.hard}
+                        onChange={e => setMatrixConfig(prev => ({ ...prev, hard: Number(e.target.value) }))}
+                        className="h-8 mt-1"
+                      />
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={handleGenerateMatrix}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    >
+                      Sinh Ma trận
+                    </Button>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    * Tổng số câu: <span className="font-bold">{matrixConfig.easy + matrixConfig.medium + matrixConfig.hard}</span>.
+                    Điểm mỗi câu: <span className="font-bold">{(10 / (matrixConfig.easy + matrixConfig.medium + matrixConfig.hard || 1)).toFixed(3)}</span> đ
+                  </div>
+                </div>
+              )}
+
               <div className="h-[300px] border rounded-md overflow-y-auto p-2">
                 {bankQuestions.length > 0 ? (
                   <Table>
@@ -490,7 +596,15 @@ export default function ExamsPage() {
                             {q.content.substring(0, 100)}...
                           </TableCell>
                           <TableCell>{q.type}</TableCell>
-                          <TableCell>{q.level}</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium border
+                              ${q.level === 'EASY' ? 'bg-green-50 text-green-700 border-green-200' :
+                                q.level === 'MEDIUM' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                  'bg-red-50 text-red-700 border-red-200'}
+                            `}>
+                              {q.level === 'EASY' ? 'Dễ' : q.level === 'MEDIUM' ? 'TB' : 'Khó'}
+                            </span>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

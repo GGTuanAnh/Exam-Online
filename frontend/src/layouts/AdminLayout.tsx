@@ -1,7 +1,6 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import {
-  LayoutDashboard,
   Users,
   BookOpen,
   Database,
@@ -10,11 +9,13 @@ import {
   ClipboardList,
   Trophy,
   LogOut,
-  User
+  User,
+  LayoutDashboard
 } from 'lucide-react';
 
 const AdminLayout = () => {
   const user = authService.getCurrentUser();
+  const location = useLocation();
 
   const handleLogout = () => {
     authService.logout();
@@ -22,7 +23,6 @@ const AdminLayout = () => {
   };
 
   const navItems = [
-    { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/admin/users', icon: Users, label: 'Người dùng' },
     { path: '/admin/courses', icon: BookOpen, label: 'Khóa học' },
     { path: '/admin/question-banks', icon: Database, label: 'Ngân hàng câu hỏi' },
@@ -35,21 +35,22 @@ const AdminLayout = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md fixed top-4 left-4 right-4 rounded-xl backdrop-blur-md px-4 py-2">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md fixed top-0 left-0 right-0 z-50 h-16">
+        <div className="flex h-full px-6 items-center justify-between">
+          <div className="flex items-center space-x-3 w-64">
             <LayoutDashboard className="w-8 h-8 text-white" />
-            <h1 className="text-xl font-bold">Admin - Quản lý Thi</h1>
+            <h1 className="text-xl font-bold">Admin Portal</h1>
           </div>
+
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm">
-              <User className="w-5 h-5 text-white/80" />
+            <div className="flex items-center space-x-2 text-sm bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+              <User className="w-4 h-4 text-white/90" />
               <span className="font-medium">{user?.name || user?.email}</span>
-              <span className="px-2 py-1 text-xs font-semibold bg-white/20 rounded-full">Admin</span>
+              <span className="px-1.5 py-0.5 text-[10px] uppercase font-bold bg-white text-indigo-600 rounded-full">Admin</span>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white hover:bg-red-100 hover:text-red-600 transition-colors rounded"
+              className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-all rounded-lg"
             >
               <LogOut className="w-4 h-4" />
               <span>Đăng xuất</span>
@@ -58,22 +59,25 @@ const AdminLayout = () => {
         </div>
       </header>
 
-      <div className="flex pt-20">
+      <div className="flex pt-16">
         {/* Sidebar */}
-        <aside className="w-64 bg-white/80 backdrop-blur-md shadow-sm rounded-xl min-h-[calc(100vh-8rem)] fixed top-20 left-4 mt-4 overflow-y-auto">
-          <nav className="p-4 space-y-2">
+        <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-4rem)] fixed top-16 left-0 overflow-y-auto z-40">
+          <nav className="p-4 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = window.location.pathname === item.path;
+              const isActive = location.pathname.startsWith(item.path);
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-200
-                    ${isActive ? 'bg-indigo-600 text-white shadow-inner' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-600'}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 group
+                    ${isActive
+                      ? 'bg-indigo-50 text-indigo-600 border-l-4 border-indigo-600 shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent'
+                    }
                   `}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
                   <span className="font-medium">{item.label}</span>
                 </Link>
               );
@@ -82,7 +86,7 @@ const AdminLayout = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8 ml-72">
+        <main className="flex-1 p-8 ml-64 bg-gray-50 min-h-[calc(100vh-4rem)]">
           <Outlet />
         </main>
       </div>

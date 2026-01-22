@@ -4,7 +4,7 @@ import { showToast } from '../../lib/toast';
 import { userService } from '../../services/user.service';
 import { authService } from '../../services/auth.service';
 import type { User } from '../../types/user';
-import { Search, Shield, Trash2 } from 'lucide-react';
+import { Search, Shield, Trash2, Users } from 'lucide-react';
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -65,7 +65,7 @@ const UsersPage: React.FC = () => {
 
   const handleUpdateRole = async (userId: string, currentRole: string) => {
     const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
-    if (!window.confirm(`Bạn có chắc muốn đổi quyền của user này thành ${ newRole }?`)) return;
+    if (!window.confirm(`Bạn có chắc muốn đổi quyền của user này thành ${newRole}?`)) return;
 
     try {
       await userService.updateRole(userId, newRole);
@@ -98,7 +98,10 @@ const UsersPage: React.FC = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Quản lý người dùng</h1>
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <Users className="w-8 h-8 text-indigo-600" />
+          Quản lý người dùng
+        </h1>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
@@ -186,11 +189,10 @@ const UsersPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.role === 'ADMIN'
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'ADMIN'
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-green-100 text-green-800'
+                        }`}
                     >
                       {user.role === 'ADMIN' && <Shield className="w-3 h-3 mr-1" />}
                       {user.role}

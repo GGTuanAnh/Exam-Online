@@ -59,7 +59,7 @@ export interface ExamSession {
   startedAt: string;
   status: 'IN_PROGRESS' | 'COMPLETED' | 'TIMEOUT';
   currentAnswers: Record<string, any>;
-  remainingTime: number; // in minutes
+  remainingTime?: number; // in minutes
   exam: {
     id: string;
     title: string;

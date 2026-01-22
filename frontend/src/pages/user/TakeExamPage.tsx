@@ -5,6 +5,7 @@ import { showToast } from '../../lib/toast';
 import { examService } from '../../services/exam.service';
 import type { ExamSession } from '../../types/exam';
 import ConfirmModal from '../../components/ConfirmModal';
+import { AUTO_SAVE_INTERVAL_MS } from '../../constants/app.constants';
 
 const TakeExamPage = () => {
   const { examId, sessionId } = useParams();
@@ -60,7 +61,7 @@ const TakeExamPage = () => {
       } catch (error) {
         console.error('Auto-save failed:', error);
       }
-    }, 30000); // 30 seconds
+    }, AUTO_SAVE_INTERVAL_MS);
 
     return () => clearInterval(autoSaveInterval);
   }, [session?.id, answers]);
@@ -167,7 +168,7 @@ const TakeExamPage = () => {
       const data = await examService.startExam(examId);
       setSession(data);
       // Use dynamic remaining time (minutes -> seconds)
-      const remainingMinutes = (data as any).remainingTime ?? data.exam.duration;
+      const remainingMinutes = data.remainingTime ?? data.exam.duration;
       setTimeRemaining(Math.floor(remainingMinutes * 60));
       setLoading(false);
     } catch (error: any) {
@@ -187,7 +188,7 @@ const TakeExamPage = () => {
       }
 
       // Use dynamic remaining time
-      const remainingMinutes = (data as any).remainingTime ?? data.exam.duration;
+      const remainingMinutes = data.remainingTime ?? data.exam.duration;
       setTimeRemaining(Math.floor(remainingMinutes * 60));
       setLoading(false);
     } catch (error: any) {

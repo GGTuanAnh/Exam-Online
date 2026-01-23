@@ -86,6 +86,8 @@ export const ExamShiftsDialog: React.FC<ExamShiftsDialogProps> = ({
 
             await examShiftService.create({
                 ...newShift,
+                startTime: new Date(newShift.startTime).toISOString(),
+                endTime: new Date(newShift.endTime).toISOString(),
                 examId,
             });
 
@@ -227,10 +229,10 @@ export const ExamShiftsDialog: React.FC<ExamShiftsDialogProps> = ({
                                             </TableCell>
                                             <TableCell>
                                                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${new Date() >= new Date(shift.startTime) && new Date() <= new Date(shift.endTime)
-                                                        ? 'bg-green-100 text-green-700'
-                                                        : new Date() > new Date(shift.endTime)
-                                                            ? 'bg-gray-100 text-gray-600'
-                                                            : 'bg-blue-100 text-blue-700'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : new Date() > new Date(shift.endTime)
+                                                        ? 'bg-gray-100 text-gray-600'
+                                                        : 'bg-blue-100 text-blue-700'
                                                     }`}>
                                                     {new Date() >= new Date(shift.startTime) && new Date() <= new Date(shift.endTime)
                                                         ? 'Đang diễn ra'

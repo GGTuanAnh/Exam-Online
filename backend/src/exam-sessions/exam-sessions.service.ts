@@ -73,16 +73,20 @@ export class ExamSessionsService {
     }
 
     // 2. Kiem tra so lan thi
-    // If testing in shift, verify shift attempts? Current logic counts by examId.
-    // Ideally, shift retake is 1. But let's stick to exam configs for now or strict 1 per shift.
+    // Fix: Nếu là thi theo Ca (Shift), chỉ đếm số lần thi trong Ca đó.
+    // Điều này cho phép tạo Ca thi mới để thi lại (Retake).
+    const countWhere: any = {
+      examId,
+      userId,
+      status: { in: [ExamStatus.COMPLETED, ExamStatus.TIMEOUT] },
+    };
+
+    if (examShiftId) {
+      countWhere.examShiftId = examShiftId;
+    }
+
     const previousAttempts = await this.prisma.examSession.count({
-      where: {
-        examId,
-        userId,
-        status: { in: [ExamStatus.COMPLETED, ExamStatus.TIMEOUT] },
-        // If in shift, maybe scope by shift?
-        // examShiftId: examShiftId // Uncomment if we want to limit attempts per shift specifically
-      },
+      where: countWhere,
     });
 
     if (previousAttempts >= exam.maxRetake) {

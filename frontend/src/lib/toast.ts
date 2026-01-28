@@ -9,8 +9,13 @@ export const showToast = {
         background: '#10b981',
         color: '#fff',
         fontWeight: '500',
+        borderRadius: '10px',
+        padding: '12px 16px',
       },
-      icon: '✓',
+      iconTheme: {
+        primary: '#fff',
+        secondary: '#10b981',
+      },
     });
   },
 
@@ -22,8 +27,13 @@ export const showToast = {
         background: '#ef4444',
         color: '#fff',
         fontWeight: '500',
+        borderRadius: '10px',
+        padding: '12px 16px',
       },
-      icon: '✕',
+      iconTheme: {
+        primary: '#fff',
+        secondary: '#ef4444',
+      },
     });
   },
 
@@ -34,6 +44,8 @@ export const showToast = {
         background: '#3b82f6',
         color: '#fff',
         fontWeight: '500',
+        borderRadius: '10px',
+        padding: '12px 16px',
       },
     });
   },

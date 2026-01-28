@@ -17,7 +17,7 @@ export class ExamsService {
       where: { id: courseId },
     });
     if (!course) {
-      throw new NotFoundException(`Course voi ID ${courseId} khong ton tai`);
+      throw new NotFoundException(`Khóa học với ID ${courseId} không tồn tại`);
     }
 
     // 2. Validate thoi gian: openTime < closeTime
@@ -41,7 +41,7 @@ export class ExamsService {
       const foundIds = existingQuestions.map(q => q.id);
       const missingIds = questionIds.filter(id => !foundIds.includes(id));
       throw new NotFoundException(
-        `Cac cau hoi sau khong ton tai: ${missingIds.join(', ')}`
+        `Các câu hỏi sau không tồn tại: ${missingIds.join(', ')}`
       );
     }
 
@@ -133,7 +133,7 @@ export class ExamsService {
     });
 
     if (!exam) {
-      throw new NotFoundException(`Exam voi ID ${id} khong ton tai`);
+      throw new NotFoundException(`Đề thi với ID ${id} không tồn tại`);
     }
 
     // Neu khong phai admin, xoa bo options de khong lo dap an
@@ -160,13 +160,13 @@ export class ExamsService {
     });
 
     if (!existingExam) {
-      throw new NotFoundException(`Exam voi ID ${id} khong ton tai`);
+      throw new NotFoundException(`Đề thi với ID ${id} không tồn tại`);
     }
 
     // 2. Khong cho phep sua neu da co nguoi thi
     if (existingExam.examSessions.length > 0) {
       throw new ForbiddenException(
-        'Khong the sua de thi da co sinh vien thi. Vui long tao de moi.'
+        'Không thể sửa đề thi đã có sinh viên thi. Vui lòng tạo đề mới.'
       );
     }
 
@@ -192,7 +192,7 @@ export class ExamsService {
         const foundIds = existingQuestions.map(q => q.id);
         const missingIds = questionIds.filter(id => !foundIds.includes(id));
         throw new NotFoundException(
-          `Cac cau hoi sau khong ton tai: ${missingIds.join(', ')}`
+          `Các câu hỏi sau không tồn tại: ${missingIds.join(', ')}`
         );
       }
     }
@@ -253,13 +253,13 @@ export class ExamsService {
     });
 
     if (!exam) {
-      throw new NotFoundException(`Exam voi ID ${id} khong ton tai`);
+      throw new NotFoundException(`Đề thi với ID ${id} không tồn tại`);
     }
 
     // 2. Khong cho phep xoa neu da co nguoi thi
     if (exam.examSessions.length > 0) {
       throw new ForbiddenException(
-        'Khong the xoa de thi da co sinh vien thi. Du lieu can duoc luu tru.'
+        'Không thể xóa đề thi đã có sinh viên thi. Dữ liệu cần được lưu trữ.'
       );
     }
 

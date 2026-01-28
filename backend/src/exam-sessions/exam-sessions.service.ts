@@ -91,7 +91,7 @@ export class ExamSessionsService {
 
     if (previousAttempts >= exam.maxRetake) {
       throw new ForbiddenException(
-        `Ban da het luot thi. So lan toi da: ${exam.maxRetake}`
+        `Bạn đã hết lượt thi. Số lần tối đa: ${exam.maxRetake}`
       );
     }
 
@@ -157,7 +157,7 @@ export class ExamSessionsService {
           where: { id: ongoingSession.id },
           data: { status: ExamStatus.TIMEOUT, endTime: now },
         });
-        throw new BadRequestException('Bai thi truoc da het gio. Vui long bat dau lai.');
+        throw new BadRequestException('Bài thi trước đã hết giờ. Vui lòng bắt đầu lại.');
       }
     }
 
@@ -318,15 +318,15 @@ export class ExamSessionsService {
     });
 
     if (!session) {
-      throw new NotFoundException(`Session voi ID ${sessionId} khong ton tai`);
+      throw new NotFoundException(`Session với ID ${sessionId} không tồn tại`);
     }
 
     if (session.userId !== userId) {
-      throw new ForbiddenException('Ban khong co quyen truy cap session nay');
+      throw new ForbiddenException('Bạn không có quyền truy cập session này');
     }
 
     if (session.status !== ExamStatus.IN_PROGRESS) {
-      throw new BadRequestException('Bai thi da ket thuc, khong the luu cau tra loi');
+      throw new BadRequestException('Bài thi đã kết thúc, không thể lưu câu trả lời');
     }
 
     // 2. Luu tam cau tra loi
@@ -335,7 +335,7 @@ export class ExamSessionsService {
       data: { currentAnswers: answers },
     });
 
-    return { message: 'Da luu cau tra loi tam thoi' };
+    return { message: 'Đã lưu câu trả lời tạm thời' };
   }
 
   async submitExam(userId: string, submitExamDto: SubmitExamDto) {
@@ -360,15 +360,15 @@ export class ExamSessionsService {
     });
 
     if (!session) {
-      throw new NotFoundException(`Session voi ID ${sessionId} khong ton tai`);
+      throw new NotFoundException(`Session với ID ${sessionId} không tồn tại`);
     }
 
     if (session.userId !== userId) {
-      throw new ForbiddenException('Ban khong co quyen nop bai nay');
+      throw new ForbiddenException('Bạn không có quyền nộp bài này');
     }
 
     if (session.status !== ExamStatus.IN_PROGRESS) {
-      throw new BadRequestException('Bai thi da duoc nop hoac da het gio');
+      throw new BadRequestException('Bài thi đã được nộp hoặc đã hết giờ');
     }
 
     // 2. Kiem tra timeout
@@ -382,7 +382,7 @@ export class ExamSessionsService {
         where: { id: sessionId },
         data: { status: ExamStatus.TIMEOUT, endTime: now },
       });
-      throw new BadRequestException('Da het thoi gian lam bai');
+      throw new BadRequestException('Đã hết thời gian làm bài');
     }
 
     // 3. Cham diem tu dong

@@ -6,7 +6,7 @@ import { ResultStatus } from '@prisma/client';
 
 @Injectable()
 export class ExamResultsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // Admin: Lay tat ca ket qua thi (co filter)
   async getAllResults(query?: { examId?: string; userId?: string; status?: ResultStatus }) {
@@ -100,12 +100,12 @@ export class ExamResultsService {
     });
 
     if (!result) {
-      throw new NotFoundException(`Ket qua voi ID ${resultId} khong ton tai`);
+      throw new NotFoundException(`Kết quả với ID ${resultId} không tồn tại`);
     }
 
     // User chi xem duoc ket qua cua minh
     if (!isAdmin && userId && result.userId !== userId) {
-      throw new ForbiddenException('Ban khong co quyen xem ket qua nay');
+      throw new ForbiddenException('Bạn không có quyền xem kết quả này');
     }
 
     return result;
@@ -128,7 +128,7 @@ export class ExamResultsService {
     });
 
     if (!detail) {
-      throw new NotFoundException(`Chi tiet ket qua voi ID ${resultDetailId} khong ton tai`);
+      throw new NotFoundException(`Chi tiết kết quả với ID ${resultDetailId} không tồn tại`);
     }
 
     // 2. Lay thong tin ExamQuestion de biet diem toi da
@@ -142,13 +142,13 @@ export class ExamResultsService {
     });
 
     if (!examQuestion) {
-      throw new NotFoundException('Khong tim thay thong tin cau hoi trong de thi');
+      throw new NotFoundException('Không tìm thấy thông tin câu hỏi trong đề thi');
     }
 
     // 3. Validate diem khong vuot qua diem toi da
     if (pointEarned > examQuestion.point) {
       throw new BadRequestException(
-        `Diem cham (${pointEarned}) khong duoc vuot qua diem toi da cua cau (${examQuestion.point})`
+        `Điểm chấm (${pointEarned}) không được vượt quá điểm tối đa của câu (${examQuestion.point})`
       );
     }
 
@@ -167,7 +167,7 @@ export class ExamResultsService {
     return {
       ...updatedDetail,
       feedback,
-      message: 'Da cham diem cau tu luan',
+      message: 'Đã chấm điểm câu tự luận',
     };
   }
 

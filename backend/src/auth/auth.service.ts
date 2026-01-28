@@ -260,7 +260,8 @@ export class AuthService {
       },
     });
 
-    const resetLink = `http://localhost:3000/auth/reset-password?token=${resetToken}`;
+    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:5173';
+    const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
 
     await this.mailerService.sendMail({
       to: user.email,

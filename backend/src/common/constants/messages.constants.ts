@@ -1,95 +1,95 @@
 // backend/src/common/constants/messages.constants.ts
 
 export const ERROR_MESSAGES = {
-  // Auth errors
-  EMAIL_ALREADY_EXISTS: 'Email nay da duoc su dung',
-  INVALID_CREDENTIALS: 'Email hoac mat khau khong dung',
-  USER_NOT_FOUND: 'Nguoi dung khong ton tai',
-  TOKEN_INVALID: 'Token khong hop le hoac da het han',
-  TOKEN_EXPIRED: 'Token da het han',
-  UNAUTHORIZED: 'Ban khong co quyen truy cap',
-  FORBIDDEN: 'Truy cap bi tu choi',
-  
-  // Exam errors
+  // Auth errors - Lỗi xác thực
+  EMAIL_ALREADY_EXISTS: 'Email này đã được sử dụng',
+  INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng',
+  USER_NOT_FOUND: 'Người dùng không tồn tại',
+  TOKEN_INVALID: 'Token không hợp lệ hoặc đã hết hạn',
+  TOKEN_EXPIRED: 'Token đã hết hạn',
+  UNAUTHORIZED: 'Bạn không có quyền truy cập',
+  FORBIDDEN: 'Truy cập bị từ chối',
+
+  // Exam errors - Lỗi đề thi
   EXAM_NOT_FOUND: 'Không tìm thấy đề thi',
   EXAM_NOT_OPEN: 'Đề thi chưa mở',
   EXAM_CLOSED: 'Đề thi đã đóng',
   EXAM_HAS_SESSIONS: 'Không thể xóa đề thi đã có người thi',
   MAX_RETAKE_REACHED: 'Bạn đã hết số lần thi',
-  
-  // Course errors
-  COURSE_NOT_FOUND: 'Khong tim thay mon hoc',
-  COURSE_CODE_EXISTS: 'Ma mon hoc nay da ton tai',
-  COURSE_HAS_DATA: 'Khong the xoa mon hoc da co du lieu',
-  
-  // Question errors
-  QUESTION_NOT_FOUND: 'Khong tim thay cau hoi',
-  QUESTION_BANK_NOT_FOUND: 'Khong tim thay ngan hang cau hoi',
-  INVALID_QUESTION_TYPE: 'Loai cau hoi khong hop le',
-  MISSING_OPTIONS: 'Cau hoi phai co it nhat 2 dap an',
-  MISSING_CORRECT_ANSWER: 'Phai co it nhat 1 dap an dung',
-  
-  // Session errors
-  SESSION_NOT_FOUND: 'Khong tim thay phien thi',
-  SESSION_ALREADY_SUBMITTED: 'Bai thi da duoc nop',
-  SESSION_EXPIRED: 'Phien thi da het han',
-  SESSION_NOT_YOURS: 'Ban khong co quyen xem phien thi nay',
-  
-  // Result errors
-  RESULT_NOT_FOUND: 'Khong tim thay ket qua thi',
-  RESULT_DETAIL_NOT_FOUND: 'Khong tim thay chi tiet ket qua',
-  INVALID_SCORE: 'Diem khong hop le',
-  SCORE_EXCEEDS_MAX: 'Diem vuot qua diem toi da',
-  
-  // Notification errors
-  NOTIFICATION_NOT_FOUND: 'Khong tim thay thong bao',
-  NOTIFICATION_NOT_YOURS: 'Ban khong co quyen truy cap thong bao nay',
-  
-  // Validation errors
-  INVALID_EMAIL: 'Dia chi email khong hop le',
-  INVALID_PASSWORD: 'Mat khau phai co it nhat 8 ky tu, bao gom chu hoa, chu thuong va so',
-  INVALID_DATE_RANGE: 'Thoi gian bat dau phai nho hon thoi gian ket thuc',
-  DUPLICATE_QUESTIONS: 'Khong duoc co cau hoi trung lap trong de thi',
-  NO_CORRECT_ANSWER: 'Phai co it nhat 1 dap an dung',
-  INVALID_TRUE_FALSE_ANSWERS: 'Cau hoi Dung/Sai phai co dung 2 dap an',
-  
-  // Part errors
-  PART_NOT_FOUND: 'Khong tim thay phan thi',
-  QUESTION_BANK_NOT_BELONG_COURSE: 'Ngan hang cau hoi khong thuoc mon hoc nay',
-  INVALID_TIME_RANGE: 'Thoi gian mo phai truoc thoi gian dong',
-  INVALID_UUID: 'ID khong hop le',
-  INVALID_DATE: 'Ngay thang khong hop le',
-  
-  // Generic errors
-  INTERNAL_SERVER_ERROR: 'Loi he thong, vui long thu lai sau',
-  BAD_REQUEST: 'Yeu cau khong hop le',
-  NOT_FOUND: 'Khong tim thay du lieu',
+
+  // Course errors - Lỗi môn học
+  COURSE_NOT_FOUND: 'Không tìm thấy môn học',
+  COURSE_CODE_EXISTS: 'Mã môn học này đã tồn tại',
+  COURSE_HAS_DATA: 'Không thể xóa môn học đã có dữ liệu',
+
+  // Question errors - Lỗi câu hỏi
+  QUESTION_NOT_FOUND: 'Không tìm thấy câu hỏi',
+  QUESTION_BANK_NOT_FOUND: 'Không tìm thấy ngân hàng câu hỏi',
+  INVALID_QUESTION_TYPE: 'Loại câu hỏi không hợp lệ',
+  MISSING_OPTIONS: 'Câu hỏi phải có ít nhất 2 đáp án',
+  MISSING_CORRECT_ANSWER: 'Phải có ít nhất 1 đáp án đúng',
+
+  // Session errors - Lỗi phiên thi
+  SESSION_NOT_FOUND: 'Không tìm thấy phiên thi',
+  SESSION_ALREADY_SUBMITTED: 'Bài thi đã được nộp',
+  SESSION_EXPIRED: 'Phiên thi đã hết hạn',
+  SESSION_NOT_YOURS: 'Bạn không có quyền xem phiên thi này',
+
+  // Result errors - Lỗi kết quả
+  RESULT_NOT_FOUND: 'Không tìm thấy kết quả thi',
+  RESULT_DETAIL_NOT_FOUND: 'Không tìm thấy chi tiết kết quả',
+  INVALID_SCORE: 'Điểm không hợp lệ',
+  SCORE_EXCEEDS_MAX: 'Điểm vượt quá điểm tối đa',
+
+  // Notification errors - Lỗi thông báo
+  NOTIFICATION_NOT_FOUND: 'Không tìm thấy thông báo',
+  NOTIFICATION_NOT_YOURS: 'Bạn không có quyền truy cập thông báo này',
+
+  // Validation errors - Lỗi xác thực dữ liệu
+  INVALID_EMAIL: 'Địa chỉ email không hợp lệ',
+  INVALID_PASSWORD: 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số',
+  INVALID_DATE_RANGE: 'Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc',
+  DUPLICATE_QUESTIONS: 'Không được có câu hỏi trùng lặp trong đề thi',
+  NO_CORRECT_ANSWER: 'Phải có ít nhất 1 đáp án đúng',
+  INVALID_TRUE_FALSE_ANSWERS: 'Câu hỏi Đúng/Sai phải có đúng 2 đáp án',
+
+  // Part errors - Lỗi phần thi
+  PART_NOT_FOUND: 'Không tìm thấy phần thi',
+  QUESTION_BANK_NOT_BELONG_COURSE: 'Ngân hàng câu hỏi không thuộc môn học này',
+  INVALID_TIME_RANGE: 'Thời gian mở phải trước thời gian đóng',
+  INVALID_UUID: 'ID không hợp lệ',
+  INVALID_DATE: 'Ngày tháng không hợp lệ',
+
+  // Generic errors - Lỗi chung
+  INTERNAL_SERVER_ERROR: 'Lỗi hệ thống, vui lòng thử lại sau',
+  BAD_REQUEST: 'Yêu cầu không hợp lệ',
+  NOT_FOUND: 'Không tìm thấy dữ liệu',
 };
 
 export const SUCCESS_MESSAGES = {
-  // Auth
-  REGISTER_SUCCESS: 'Dang ky thanh cong! Vui long kiem tra email de xac thuc tai khoan',
-  LOGIN_SUCCESS: 'Dang nhap thanh cong',
-  LOGOUT_SUCCESS: 'Dang xuat thanh cong',
-  EMAIL_VERIFIED: 'Xac thuc email thanh cong',
-  PASSWORD_RESET_EMAIL_SENT: 'Email dat lai mat khau da duoc gui',
-  PASSWORD_CHANGED: 'Doi mat khau thanh cong',
-  
-  // CRUD
-  CREATED: 'Tao moi thanh cong',
-  UPDATED: 'Cap nhat thanh cong',
-  DELETED: 'Xoa thanh cong',
-  
-  // Exam
-  EXAM_STARTED: 'Bat dau lam bai thanh cong',
-  EXAM_SUBMITTED: 'Nop bai thanh cong',
-  ANSWERS_SAVED: 'Luu dap an thanh cong',
-  
-  // Grading
-  ESSAY_GRADED: 'Da cham diem cau tu luan',
-  
-  // Notification
-  NOTIFICATION_SENT: 'Gui thong bao thanh cong',
-  NOTIFICATION_MARKED_READ: 'Danh dau da doc thanh cong',
-  NOTIFICATION_DELETED: 'Xoa thong bao thanh cong',
+  // Auth - Xác thực
+  REGISTER_SUCCESS: 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản',
+  LOGIN_SUCCESS: 'Đăng nhập thành công',
+  LOGOUT_SUCCESS: 'Đăng xuất thành công',
+  EMAIL_VERIFIED: 'Xác thực email thành công',
+  PASSWORD_RESET_EMAIL_SENT: 'Email đặt lại mật khẩu đã được gửi',
+  PASSWORD_CHANGED: 'Đổi mật khẩu thành công',
+
+  // CRUD - Thao tác dữ liệu
+  CREATED: 'Tạo mới thành công',
+  UPDATED: 'Cập nhật thành công',
+  DELETED: 'Xóa thành công',
+
+  // Exam - Bài thi
+  EXAM_STARTED: 'Bắt đầu làm bài thành công',
+  EXAM_SUBMITTED: 'Nộp bài thành công',
+  ANSWERS_SAVED: 'Lưu đáp án thành công',
+
+  // Grading - Chấm điểm
+  ESSAY_GRADED: 'Đã chấm điểm câu tự luận',
+
+  // Notification - Thông báo
+  NOTIFICATION_SENT: 'Gửi thông báo thành công',
+  NOTIFICATION_MARKED_READ: 'Đánh dấu đã đọc thành công',
+  NOTIFICATION_DELETED: 'Xóa thông báo thành công',
 };

@@ -2,8 +2,6 @@
 
 Hệ thống thi trắc nghiệm trực tuyến hiện đại, hỗ trợ quản lý khóa học, ngân hàng câu hỏi, tổ chức thi và chấm điểm tự động. Dự án được xây dựng với kiến trúc Microservices (Frontend/Backend tách biệt) và container hóa với Docker.
 
-![Project Banner](<!-- Link ảnh banner dự án -->)
-
 ## 🚀 Tính năng chính
 
 ### 👤 Người dùng (Sinh viên)
@@ -42,15 +40,8 @@ Hệ thống thi trắc nghiệm trực tuyến hiện đại, hỗ trợ quản
 *   **Web Server**: Nginx
 *   **CI/CD**: (Đang cập nhật)
 
-## 📸 Hình ảnh demo
+## 📸 Trang web : https://exam-online-frontend.onrender.com/
 
-| Dashboard | Giao diện thi |
-|:---:|:---:|
-| ![Dashboard](<!-- Link ảnh Dashboard -->) | ![Exam Interface](<!-- Link ảnh Giao diện thi -->) |
-
-| Quản lý câu hỏi | Kết quả thi |
-|:---:|:---:|
-| ![Question Bank](<!-- Link ảnh Quản lý câu hỏi -->) | ![Results](<!-- Link ảnh Kết quả thi -->) |
 
 ## ⚙️ Cài đặt và Chạy dự án
 
@@ -66,61 +57,7 @@ Hệ thống thi trắc nghiệm trực tuyến hiện đại, hỗ trợ quản
     git clone https://github.com/GGTuanAnh/Exam-Online.git
     cd Exam-Online
     ```
- ## 🧪 Hướng dẫn Kiểm thử (Testing)
 
-Dự án này đi kèm với một kịch bản kiểm thử thủ công chi tiết, bao gồm các bước từ Admin tạo đề đến Học sinh làm bài và chấm điểm.
-
-👉 **[Xem chi tiết tại TEST_PLAN.md](./TEST_PLAN.md)**
-
----
-
-## 👨‍💻 Tác giả
-
-Phát triển bởi: **Nhóm Đồ án Liên ngành**
-Liên hệ: `tuans@edu.vn` (Example)
-
-2.  **Cấu hình môi trường**
-    *   Copy file `.env.example` thành `.env` ở root folder.
-    *   Cập nhật các thông số Database, Google Auth, JWT Secret trong file `.env`.
-
-3.  **Khởi chạy Docker Compose**
-    ```bash
-    docker-compose up -d --build
-    ```
-    *   Backend sẽ chạy tại: `http://localhost:3000`
-    *   Frontend sẽ chạy tại: `http://localhost:80` (hoặc port cấu hình trong nginx)
-    *   API Docs: `http://localhost:3000/api-docs`
-
-### Cách 2: Chạy Local (Thủ công)
-
-#### Backend
-1.  Di chuyển vào thư mục root:
-    ```bash
-    npm install
-    ```
-2.  Cấu hình Database trong `.env` và chạy migration:
-    ```bash
-    npx prisma migrate dev
-    ```
-3.  Seed dữ liệu mẫu (nếu có):
-    ```bash
-    npm run seed
-    ```
-4.  Khởi động server:
-    ```bash
-    npm run start:dev
-    ```
-
-#### Frontend
-1.  Di chuyển vào thư mục frontend:
-    ```bash
-    cd frontend
-    npm install
-    ```
-2.  Khởi động development server:
-    ```bash
-    npm run dev
-    ```
 
 ## 📂 Cấu trúc dự án
 
@@ -144,6 +81,7 @@ Exam-Online/
 ├── docker-compose.yml      # Cấu hình Docker
 └── nginx.conf              # Cấu hình Web Server
 ```
+
 
 
 

@@ -48,6 +48,20 @@ api.interceptors.response.use(
 
     // Neu loi 401 va chua thu refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Check if it's a single-device logout (logged in from another device)
+      const errorMessage = error.response?.data?.message || '';
+      if (errorMessage.includes('thiết bị khác') || errorMessage.includes('đã hết hạn')) {
+        // Clear session and redirect with message
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('refresh_token');
+        sessionStorage.removeItem('user');
+
+        // Store message to show on login page
+        sessionStorage.setItem('logout_reason', 'Phiên đăng nhập đã kết thúc. Có thể do bạn đã đăng nhập từ thiết bị khác.');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
       if (isRefreshing) {
         // Neu dang refresh, cho den khi refresh xong
         return new Promise((resolve, reject) => {

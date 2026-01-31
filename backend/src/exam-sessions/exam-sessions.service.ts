@@ -341,162 +341,166 @@ export class ExamSessionsService {
   async submitExam(userId: string, submitExamDto: SubmitExamDto) {
     const { sessionId, answers, leaveScreenCount } = submitExamDto;
 
-    // 1. Validate Session
-    const session = await this.prisma.examSession.findUnique({
-      where: { id: sessionId },
-      include: {
-        exam: {
-          include: {
-            questions: {
-              include: {
-                question: {
-                  include: { options: true },
+    // Use transaction to prevent race conditions (e.g., double submit, timeout + submit)
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Validate Session with lock (SELECT FOR UPDATE in transaction)
+      const session = await tx.examSession.findUnique({
+        where: { id: sessionId },
+        include: {
+          exam: {
+            include: {
+              questions: {
+                include: {
+                  question: {
+                    include: { options: true },
+                  },
                 },
               },
             },
           },
         },
-      },
-    });
-
-    if (!session) {
-      throw new NotFoundException(`Session với ID ${sessionId} không tồn tại`);
-    }
-
-    if (session.userId !== userId) {
-      throw new ForbiddenException('Bạn không có quyền nộp bài này');
-    }
-
-    if (session.status !== ExamStatus.IN_PROGRESS) {
-      throw new BadRequestException('Bài thi đã được nộp hoặc đã hết giờ');
-    }
-
-    // 2. Kiem tra timeout
-    const now = new Date();
-    const elapsed = Math.floor(
-      (now.getTime() - session.startTime.getTime()) / 1000 / 60
-    );
-
-    if (elapsed > session.exam.duration) {
-      await this.prisma.examSession.update({
-        where: { id: sessionId },
-        data: { status: ExamStatus.TIMEOUT, endTime: now },
       });
-      throw new BadRequestException('Đã hết thời gian làm bài');
-    }
 
-    // 3. Cham diem tu dong
-    const examQuestions = session.exam.questions;
-    let correctAnswers = 0;
-    let totalScore = 0;
-    const resultDetails: any[] = [];
-
-    for (const examQuestion of examQuestions) {
-      const question = examQuestion.question;
-      const userAnswer = answers[question.id];
-      const correctOptions = question.options.filter(opt => opt.isCorrect);
-
-      let isCorrect = false;
-      let pointEarned = 0;
-
-      // Cham diem theo loai cau hoi
-      if (question.type === 'SINGLE_CHOICE' || question.type === 'TRUE_FALSE') {
-        // 1 dap an dung
-        // Frontend gui answer duoi dang array, can normalize
-        const normalizedAnswer = Array.isArray(userAnswer) ? userAnswer[0] : userAnswer;
-        const correctOptionId = correctOptions[0]?.id;
-        isCorrect = normalizedAnswer === correctOptionId;
-        pointEarned = isCorrect ? examQuestion.point : 0;
-      } else if (question.type === 'MULTIPLE_CHOICE') {
-        // Nhieu dap an dung - cho diem theo ty le dung
-        const userAnswers = Array.isArray(userAnswer) ? userAnswer : (userAnswer ? [userAnswer] : []);
-        const correctIds = correctOptions.map(opt => opt.id).sort();
-
-        if (userAnswers.length === 0) {
-          isCorrect = false;
-          pointEarned = 0;
-        } else {
-          // Dem so dap an dung user chon
-          const correctSelected = userAnswers.filter(id => correctIds.includes(id)).length;
-          const wrongSelected = userAnswers.filter(id => !correctIds.includes(id)).length;
-
-          // Neu chon sai bat ky dap an nao => 0 diem
-          if (wrongSelected > 0) {
-            isCorrect = false;
-            pointEarned = 0;
-          } else if (correctSelected === correctIds.length) {
-            // Chon du tat ca dap an dung
-            isCorrect = true;
-            pointEarned = examQuestion.point;
-          } else {
-            // Chon dung mot phan (khong co sai) => cho diem ty le
-            isCorrect = false;
-            pointEarned = (correctSelected / correctIds.length) * examQuestion.point;
-          }
-        }
-      } else if (question.type === 'ESSAY') {
-        // Tu luan - chua cham, de admin cham sau
-        isCorrect = false;
-        pointEarned = 0;
+      if (!session) {
+        throw new NotFoundException(`Session với ID ${sessionId} không tồn tại`);
       }
 
-      if (isCorrect) correctAnswers++;
-      totalScore += pointEarned;
+      if (session.userId !== userId) {
+        throw new ForbiddenException('Bạn không có quyền nộp bài này');
+      }
 
-      resultDetails.push({
-        questionId: question.id,
-        selectedOptionId: Array.isArray(userAnswer) ? null : userAnswer,
-        textAnswer: question.type === 'ESSAY' ? userAnswer : null,
-        isCorrect,
-        pointEarned,
-      });
-    }
+      // Check if already submitted (race condition prevention)
+      if (session.status !== ExamStatus.IN_PROGRESS) {
+        throw new BadRequestException('Bài thi đã được nộp hoặc đã hết giờ');
+      }
 
-    // 4. Tinh diem toi da va status
-    const maxScore = examQuestions.reduce((sum, eq) => sum + eq.point, 0);
-    const passingScore = maxScore * 0.5; // 50% de pass
-    const status = totalScore >= passingScore ? ResultStatus.PASSED : ResultStatus.FAILED;
+      // 2. Kiem tra timeout
+      const now = new Date();
+      const elapsed = Math.floor(
+        (now.getTime() - session.startTime.getTime()) / 1000 / 60
+      );
 
-    // 5. Tao ExamResult
-    const result = await this.prisma.examResult.create({
-      data: {
-        sessionId,
-        userId,
-        examId: session.examId,
-        score: totalScore,
-        totalQuestions: examQuestions.length,
-        correctAnswers,
-        status,
-        leaveScreenCount: leaveScreenCount || 0,
-        details: {
-          create: resultDetails,
+      if (elapsed > session.exam.duration) {
+        await tx.examSession.update({
+          where: { id: sessionId },
+          data: { status: ExamStatus.TIMEOUT, endTime: now },
+        });
+        throw new BadRequestException('Đã hết thời gian làm bài');
+      }
+
+      // 3. Cham diem tu dong
+      const examQuestions = session.exam.questions;
+      let correctAnswers = 0;
+      let totalScore = 0;
+      const resultDetails: any[] = [];
+
+      for (const examQuestion of examQuestions) {
+        const question = examQuestion.question;
+        const userAnswer = answers[question.id];
+        const correctOptions = question.options.filter(opt => opt.isCorrect);
+
+        let isCorrect = false;
+        let pointEarned = 0;
+
+        // Cham diem theo loai cau hoi
+        if (question.type === 'SINGLE_CHOICE' || question.type === 'TRUE_FALSE') {
+          // 1 dap an dung
+          // Frontend gui answer duoi dang array, can normalize
+          const normalizedAnswer = Array.isArray(userAnswer) ? userAnswer[0] : userAnswer;
+          const correctOptionId = correctOptions[0]?.id;
+          isCorrect = normalizedAnswer === correctOptionId;
+          pointEarned = isCorrect ? examQuestion.point : 0;
+        } else if (question.type === 'MULTIPLE_CHOICE') {
+          // Nhieu dap an dung - cho diem theo ty le dung
+          const userAnswers = Array.isArray(userAnswer) ? userAnswer : (userAnswer ? [userAnswer] : []);
+          const correctIds = correctOptions.map(opt => opt.id).sort();
+
+          if (userAnswers.length === 0) {
+            isCorrect = false;
+            pointEarned = 0;
+          } else {
+            // Dem so dap an dung user chon
+            const correctSelected = userAnswers.filter(id => correctIds.includes(id)).length;
+            const wrongSelected = userAnswers.filter(id => !correctIds.includes(id)).length;
+
+            // Neu chon sai bat ky dap an nao => 0 diem
+            if (wrongSelected > 0) {
+              isCorrect = false;
+              pointEarned = 0;
+            } else if (correctSelected === correctIds.length) {
+              // Chon du tat ca dap an dung
+              isCorrect = true;
+              pointEarned = examQuestion.point;
+            } else {
+              // Chon dung mot phan (khong co sai) => cho diem ty le
+              isCorrect = false;
+              pointEarned = (correctSelected / correctIds.length) * examQuestion.point;
+            }
+          }
+        } else if (question.type === 'ESSAY') {
+          // Tu luan - chua cham, de admin cham sau
+          isCorrect = false;
+          pointEarned = 0;
+        }
+
+        if (isCorrect) correctAnswers++;
+        totalScore += pointEarned;
+
+        resultDetails.push({
+          questionId: question.id,
+          selectedOptionId: Array.isArray(userAnswer) ? null : userAnswer,
+          textAnswer: question.type === 'ESSAY' ? userAnswer : null,
+          isCorrect,
+          pointEarned,
+        });
+      }
+
+      // 4. Tinh diem toi da va status
+      const maxScore = examQuestions.reduce((sum, eq) => sum + eq.point, 0);
+      const passingScore = maxScore * 0.5; // 50% de pass
+      const status = totalScore >= passingScore ? ResultStatus.PASSED : ResultStatus.FAILED;
+
+      // 5. Tao ExamResult (within transaction)
+      const result = await tx.examResult.create({
+        data: {
+          sessionId,
+          userId,
+          examId: session.examId,
+          score: totalScore,
+          totalQuestions: examQuestions.length,
+          correctAnswers,
+          status,
+          leaveScreenCount: leaveScreenCount || 0,
+          details: {
+            create: resultDetails,
+          },
         },
-      },
-      include: {
-        details: true,
-      },
-    });
+        include: {
+          details: true,
+        },
+      });
 
-    // 6. Cap nhat Session
-    await this.prisma.examSession.update({
-      where: { id: sessionId },
-      data: {
-        status: ExamStatus.COMPLETED,
-        endTime: now,
-      },
-    });
+      // 6. Cap nhat Session (within transaction)
+      await tx.examSession.update({
+        where: { id: sessionId },
+        data: {
+          status: ExamStatus.COMPLETED,
+          endTime: now,
+        },
+      });
 
-    return {
-      result,
-      summary: {
-        totalScore,
-        maxScore,
-        correctAnswers,
-        totalQuestions: examQuestions.length,
-        status,
-        passingScore,
-      },
-    };
+      return {
+        result,
+        summary: {
+          totalScore,
+          maxScore,
+          correctAnswers,
+          totalQuestions: examQuestions.length,
+          status,
+          passingScore,
+        },
+      };
+    }); // End transaction
   }
 
   async getMyExamSessions(userId: string, examId?: string) {
@@ -601,5 +605,53 @@ export class ExamSessionsService {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
+  }
+
+  // Get remaining time for a session (for timer sync)
+  async getSessionTime(userId: string, sessionId: string) {
+    const session = await this.prisma.examSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        exam: { select: { duration: true } },
+        examShift: { select: { endTime: true } },
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException(`Session với ID ${sessionId} không tồn tại`);
+    }
+
+    if (session.userId !== userId) {
+      throw new ForbiddenException('Bạn không có quyền truy cập session này');
+    }
+
+    if (session.status !== ExamStatus.IN_PROGRESS) {
+      return {
+        remainingSeconds: 0,
+        status: session.status,
+        serverTime: new Date().toISOString(),
+      };
+    }
+
+    const now = new Date();
+    const elapsedMinutes = (now.getTime() - session.startTime.getTime()) / 1000 / 60;
+    let remainingMinutes = session.exam.duration - elapsedMinutes;
+
+    // Consider shift end time
+    if (session.examShift?.endTime) {
+      const minutesUntilShiftEnd = (session.examShift.endTime.getTime() - now.getTime()) / 1000 / 60;
+      if (minutesUntilShiftEnd < remainingMinutes) {
+        remainingMinutes = minutesUntilShiftEnd;
+      }
+    }
+
+    // Ensure non-negative
+    const remainingSeconds = Math.max(0, Math.floor(remainingMinutes * 60));
+
+    return {
+      remainingSeconds,
+      status: session.status,
+      serverTime: now.toISOString(),
+    };
   }
 }

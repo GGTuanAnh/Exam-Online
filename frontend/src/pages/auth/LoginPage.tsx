@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authService } from '../../services/auth.service';
 import { useNavigate, Link } from 'react-router-dom';
 import { showToast } from '../../lib/toast';
-import { Eye, EyeOff, Mail, Lock, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Sparkles, AlertCircle } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -10,6 +10,16 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [logoutReason, setLogoutReason] = useState<string | null>(null);
+
+  // Check for logout reason (e.g., kicked due to login from another device)
+  useEffect(() => {
+    const reason = sessionStorage.getItem('logout_reason');
+    if (reason) {
+      setLogoutReason(reason);
+      sessionStorage.removeItem('logout_reason'); // Clear after showing
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +65,22 @@ const LoginPage: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Logout Reason Alert */}
+          {logoutReason && (
+            <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-amber-800 font-medium">{logoutReason}</p>
+                <button
+                  onClick={() => setLogoutReason(null)}
+                  className="text-xs text-amber-600 hover:text-amber-700 mt-1"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Email Input */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -138,10 +164,10 @@ const LoginPage: React.FC = () => {
           type="button"
           className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl hover:bg-gray-50 hover:border-gray-300 font-medium transition-all duration-200 shadow-sm hover:shadow group"
         >
-          <img 
-            src="https://www.svgrepo.com/show/475656/google-color.svg" 
-            className="w-5 h-5 group-hover:scale-110 transition-transform" 
-            alt="Google" 
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            className="w-5 h-5 group-hover:scale-110 transition-transform"
+            alt="Google"
           />
           <span>Đăng nhập bằng Google</span>
         </button>
@@ -149,8 +175,8 @@ const LoginPage: React.FC = () => {
         {/* Register Link */}
         <div className="text-center mt-6">
           <span className="text-gray-600">Chưa có tài khoản? </span>
-          <Link 
-            to="/register" 
+          <Link
+            to="/register"
             className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
           >
             Đăng ký ngay

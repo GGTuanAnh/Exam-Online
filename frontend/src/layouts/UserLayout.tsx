@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { authService } from '../services/auth.service';
-import { BookOpen, Trophy, LogOut, User, Clock } from 'lucide-react';
+import { BookOpen, LogOut, User, Clock } from 'lucide-react';
 
 const UserLayout = () => {
   const user = authService.getCurrentUser();
@@ -21,7 +21,6 @@ const UserLayout = () => {
 
   const navItems = [
     { path: '/', icon: BookOpen, label: 'Bài thi khả dụng' },
-    { path: '/my-results', icon: Trophy, label: 'Kết quả của tôi' },
   ];
 
   return (

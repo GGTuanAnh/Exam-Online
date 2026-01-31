@@ -9,7 +9,8 @@ const CoursesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  
+  const [searchKeyword, setSearchKeyword] = useState('');
+
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
@@ -23,6 +24,16 @@ const CoursesPage: React.FC = () => {
 
   const currentUser = authService.getCurrentUser();
   const isAdmin = currentUser?.role === 'ADMIN';
+
+  // Filtered courses based on search keyword
+  const filteredCourses = courses.filter((course) => {
+    if (!searchKeyword.trim()) return true;
+    const keyword = searchKeyword.toLowerCase().trim();
+    return (
+      course.code.toLowerCase().includes(keyword) ||
+      course.name.toLowerCase().includes(keyword)
+    );
+  });
 
   useEffect(() => {
     loadCourses();
@@ -85,7 +96,7 @@ const CoursesPage: React.FC = () => {
         setSuccess('Cập nhật môn học thành công!');
       }
       handleCloseModal();
-      
+
       // Auto clear success message
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
@@ -129,15 +140,15 @@ const CoursesPage: React.FC = () => {
           <p className="text-gray-500 mt-1">Quản lý danh sách các môn học và học phần trong hệ thống.</p>
         </div>
         <div className="flex gap-2">
-          <button 
-             onClick={loadCourses}
-             className="flex items-center justify-center p-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors shadow-sm"
-             title="Tải lại"
+          <button
+            onClick={loadCourses}
+            className="flex items-center justify-center p-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors shadow-sm"
+            title="Tải lại"
           >
             <RefreshCcw className="w-5 h-5" />
           </button>
           {isAdmin && (
-            <button 
+            <button
               onClick={handleOpenCreate}
               className="flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
             >
@@ -165,17 +176,19 @@ const CoursesPage: React.FC = () => {
       {/* Content */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-           <div className="relative max-w-md">
+          <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
               placeholder="Tìm kiếm môn học (Mã, Tên)..."
               className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -189,7 +202,7 @@ const CoursesPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {courses.map((course) => (
+              {filteredCourses.map((course) => (
                 <tr key={course.id} className="hover:bg-blue-50/30 transition-colors group">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="font-mono text-sm font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded">
@@ -229,13 +242,15 @@ const CoursesPage: React.FC = () => {
                   )}
                 </tr>
               ))}
-              {courses.length === 0 && (
+              {filteredCourses.length === 0 && (
                 <tr>
                   <td colSpan={isAdmin ? 5 : 4} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center text-gray-400 gap-2">
-                       <BookOpen className="w-12 h-12 text-gray-300" />
-                       <span className="text-lg">Chưa có môn học nào</span>
-                       {isAdmin && <span className="text-sm">Nhấn "Thêm Học phần" để bắt đầu</span>}
+                      <BookOpen className="w-12 h-12 text-gray-300" />
+                      <span className="text-lg">
+                        {searchKeyword ? `Không tìm thấy kết quả cho "${searchKeyword}"` : 'Chưa có môn học nào'}
+                      </span>
+                      {isAdmin && !searchKeyword && <span className="text-sm">Nhấn "Thêm Học phần" để bắt đầu</span>}
                     </div>
                   </td>
                 </tr>
@@ -260,59 +275,59 @@ const CoursesPage: React.FC = () => {
                     {modalMode === 'create' ? 'Thêm Học phần mới' : 'Cập nhật Học phần'}
                   </h3>
                   <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-500 transition-colors">
-                     <X className="w-6 h-6" />
+                    <X className="w-6 h-6" />
                   </button>
                 </div>
               </div>
 
               <form onSubmit={handleSubmit}>
                 <div className="p-6 space-y-4">
-                   <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Mã Học phần <span className="text-red-500">*</span></label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.code}
-                        onChange={(e) => setFormData({...formData, code: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="VD: INT3306"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Mã học phần là duy nhất.</p>
-                   </div>
-                   
-                   <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Tên Học phần <span className="text-red-500">*</span></label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="VD: Phát triển ứng dụng Web"
-                      />
-                   </div>
-                   
-                   <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Số Tín chỉ</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={formData.credits}
-                        onChange={(e) => setFormData({...formData, credits: parseInt(e.target.value) || 0})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      />
-                   </div>
-                   
-                   <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Mô tả</label>
-                      <textarea
-                        rows={3}
-                        value={formData.description || ''}
-                        onChange={(e) => setFormData({...formData, description: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="Mô tả ngắn về học phần..."
-                      ></textarea>
-                   </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Mã Học phần <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.code}
+                      onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="VD: INT3306"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Mã học phần là duy nhất.</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Tên Học phần <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="VD: Phát triển ứng dụng Web"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Số Tín chỉ</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.credits}
+                      onChange={(e) => setFormData({ ...formData, credits: parseInt(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Mô tả</label>
+                    <textarea
+                      rows={3}
+                      value={formData.description || ''}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="Mô tả ngắn về học phần..."
+                    ></textarea>
+                  </div>
                 </div>
 
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">

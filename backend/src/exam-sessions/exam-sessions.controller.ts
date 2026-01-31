@@ -62,4 +62,10 @@ export class ExamSessionsController {
   resumeSession(@Request() req, @Param('sessionId') sessionId: string) {
     return this.examSessionsService.resumeSession(req.user.userId, sessionId);
   }
+
+  // Endpoint để sync timer với server (tránh desync khi pause/resume tab)
+  @Get(':sessionId/time')
+  getSessionTime(@Request() req, @Param('sessionId') sessionId: string) {
+    return this.examSessionsService.getSessionTime(req.user.userId, sessionId);
+  }
 }

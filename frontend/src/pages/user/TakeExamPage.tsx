@@ -7,6 +7,10 @@ import type { ExamSession } from '../../types/exam';
 import ConfirmModal from '../../components/ConfirmModal';
 import { AUTO_SAVE_INTERVAL_MS } from '../../constants/app.constants';
 
+// Constants for localStorage backup
+const TIMER_SYNC_INTERVAL_MS = 60000; // Sync with server every 60 seconds
+const getLocalStorageKey = (sessionId: string) => `exam_answers_${sessionId}`;
+
 const TakeExamPage = () => {
   const { examId, sessionId } = useParams();
   const navigate = useNavigate();
@@ -50,21 +54,56 @@ const TakeExamPage = () => {
     return () => clearInterval(timer);
   }, [timeRemaining]);
 
-  // Auto-save answers every 30 seconds
+  // Auto-save answers every 30 seconds (to server and localStorage)
   useEffect(() => {
     if (!session?.id || Object.keys(answers).length === 0) return;
 
+    // Immediate backup to localStorage
+    const storageKey = getLocalStorageKey(session.id);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(answers));
+    } catch (e) {
+      console.warn('LocalStorage backup failed:', e);
+    }
+
     const autoSaveInterval = setInterval(async () => {
       try {
+        // Backup to localStorage first (instant)
+        localStorage.setItem(storageKey, JSON.stringify(answers));
+        // Then save to server
         await examService.saveAnswer(session.id, answers);
-        console.log('Auto-saved answers');
+        console.log('Auto-saved answers to server and localStorage');
       } catch (error) {
-        console.error('Auto-save failed:', error);
+        console.error('Auto-save to server failed, localStorage backup exists:', error);
       }
     }, AUTO_SAVE_INTERVAL_MS);
 
     return () => clearInterval(autoSaveInterval);
   }, [session?.id, answers]);
+
+  // Timer sync with server (every 60 seconds)
+  useEffect(() => {
+    if (!session?.id || timeRemaining <= 0) return;
+
+    const syncTimer = setInterval(async () => {
+      try {
+        const serverTime = await examService.getSessionTime(session.id);
+        if (serverTime.status !== 'IN_PROGRESS') {
+          // Session ended on server, auto-submit
+          showToast.error('Phiên thi đã kết thúc');
+          handleSubmit();
+          return;
+        }
+        // Sync with server time (use server as source of truth)
+        setTimeRemaining(serverTime.remainingSeconds);
+        console.log('Timer synced with server:', serverTime.remainingSeconds, 'seconds');
+      } catch (error) {
+        console.warn('Timer sync failed, continuing with local timer:', error);
+      }
+    }, TIMER_SYNC_INTERVAL_MS);
+
+    return () => clearInterval(syncTimer);
+  }, [session?.id, timeRemaining > 0]);
 
   // Anti-cheat: Detect tab/window switch
   useEffect(() => {
@@ -167,6 +206,22 @@ const TakeExamPage = () => {
       if (!examId) return;
       const data = await examService.startExam(examId);
       setSession(data);
+
+      // Try to restore answers from localStorage (in case of page refresh)
+      const storageKey = getLocalStorageKey(data.id);
+      try {
+        const savedAnswers = localStorage.getItem(storageKey);
+        if (savedAnswers) {
+          const parsed = JSON.parse(savedAnswers);
+          // Merge: server data takes priority, localStorage as fallback
+          const merged = { ...parsed, ...(data.currentAnswers || {}) };
+          setAnswers(merged);
+          console.log('Restored answers from localStorage');
+        }
+      } catch (e) {
+        console.warn('Failed to restore from localStorage:', e);
+      }
+
       // Use dynamic remaining time (minutes -> seconds)
       const remainingMinutes = data.remainingTime ?? data.exam.duration;
       setTimeRemaining(Math.floor(remainingMinutes * 60));
@@ -183,9 +238,26 @@ const TakeExamPage = () => {
       const data = await examService.resumeSession(sessionId);
       setSession(data);
 
-      if (data.currentAnswers) {
-        setAnswers(data.currentAnswers as any);
+      // Merge server answers with localStorage backup
+      const storageKey = getLocalStorageKey(data.id);
+      let mergedAnswers = {};
+
+      try {
+        const savedAnswers = localStorage.getItem(storageKey);
+        if (savedAnswers) {
+          mergedAnswers = JSON.parse(savedAnswers);
+          console.log('Found localStorage backup');
+        }
+      } catch (e) {
+        console.warn('Failed to parse localStorage:', e);
       }
+
+      // Server data takes priority over localStorage
+      if (data.currentAnswers) {
+        mergedAnswers = { ...mergedAnswers, ...(data.currentAnswers as any) };
+      }
+
+      setAnswers(mergedAnswers);
 
       // Use dynamic remaining time
       const remainingMinutes = data.remainingTime ?? data.exam.duration;
@@ -250,7 +322,7 @@ const TakeExamPage = () => {
     setShowSubmitConfirm(false);
     setIsSubmitting(true);
     try {
-      await examService.submitExam(session!.id, answers, leaveScreenCount);
+      const response = await examService.submitExam(session!.id, answers, leaveScreenCount);
 
       // Exit fullscreen before navigate
       if (isFullscreen) {
@@ -258,7 +330,25 @@ const TakeExamPage = () => {
       }
 
       showToast.success('Nộp bài thành công!');
-      navigate('/my-results');
+
+      // Navigate to ExamCompletePage with result data
+      navigate('/exam-complete', {
+        state: {
+          result: response.result,
+          summary: response.summary,
+          examInfo: {
+            title: session!.exam.title,
+            duration: session!.exam.duration,
+            courseName: (session as any)?.exam?.course?.name || 'N/A',
+            courseCode: (session as any)?.exam?.course?.code || '',
+          },
+          sessionInfo: {
+            startTime: (session as any)?.startedAt || new Date().toISOString(),
+            endTime: new Date().toISOString(),
+            shiftName: (session as any)?.examShift?.name || null,
+          }
+        }
+      });
     } catch (error) {
       showToast.error('Không thể nộp bài');
       setIsSubmitting(false);

@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Get, Query, UseGuards, Req, UnauthorizedException, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -15,6 +16,8 @@ import type { Response } from 'express';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
+  // Stricter rate limit: 3 requests per 60 seconds for registration
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('register')
   @ApiOperation({ summary: 'Đăng ký tài khoản mới' })
   @ApiResponse({ status: 201, description: 'Đăng ký thành công. Email xác thực đã được gửi.' })
@@ -32,6 +35,8 @@ export class AuthController {
     return this.authService.verifyEmail(token);
   }
 
+  // Stricter rate limit: 5 requests per 60 seconds for login (prevent brute-force)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   @ApiOperation({ summary: 'Đăng nhập bằng email và password' })
   @ApiBody({
@@ -99,6 +104,8 @@ export class AuthController {
     return this.authService.refreshAccessToken(refreshToken);
   }
 
+  // Stricter rate limit: 3 requests per 60 seconds for forgot password
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('forgot-password')
   @ApiOperation({ summary: 'Gửi email reset password' })
   @ApiResponse({ status: 200, description: 'Email reset password đã được gửi' })

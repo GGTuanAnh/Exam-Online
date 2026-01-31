@@ -99,7 +99,27 @@ export const examService = {
 
   // Submit exam
   async submitExam(sessionId: string, answers: Record<string, any>, leaveScreenCount: number = 0) {
-    const response = await api.post('/exam-sessions/submit', {
+    interface SubmitExamResponse {
+      result: {
+        id: string;
+        score: number;
+        totalQuestions: number;
+        correctAnswers: number;
+        status: string;
+        submittedAt?: string;
+        leaveScreenCount?: number;
+      };
+      summary: {
+        totalScore: number;
+        maxScore: number;
+        correctAnswers: number;
+        totalQuestions: number;
+        status: string;
+        passingScore: number;
+      };
+    }
+
+    const response = await api.post<SubmitExamResponse>('/exam-sessions/submit', {
       sessionId,
       answers,
       leaveScreenCount,
@@ -116,6 +136,16 @@ export const examService = {
   // Resume session (for taking exam)
   async resumeSession(sessionId: string) {
     const response = await api.get<ExamSession>(`/exam-sessions/${sessionId}/resume`);
+    return response.data;
+  },
+
+  // Get server time for timer sync
+  async getSessionTime(sessionId: string) {
+    const response = await api.get<{
+      remainingSeconds: number;
+      status: string;
+      serverTime: string;
+    }>(`/exam-sessions/${sessionId}/time`);
     return response.data;
   }
 };

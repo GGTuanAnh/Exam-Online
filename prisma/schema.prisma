@@ -63,8 +63,12 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   isActive  Boolean  @default(false) @map("is_active")
 
-  // Token xác thực email
-  verificationToken String? @map("verification_token")
+  // Token xác thực email / reset password
+  verificationToken       String?   @map("verification_token")
+  resetPasswordExpires    DateTime? @map("reset_password_expires") // Thời gian hết hạn token reset password
+
+  // Single device login: mỗi lần login, version tăng lên → invalidate token cũ
+  tokenVersion Int @default(0) @map("token_version")
 
   // Quan hệ
   examSessions  ExamSession[]

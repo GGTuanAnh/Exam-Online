@@ -16,8 +16,8 @@ import ExamsPage from './pages/exams/ExamsPage';
 import ExamSessionsPage from './pages/exam-sessions/ExamSessionsPage';
 import ExamResultsPage from './pages/exam-results/ExamResultsPage';
 import AvailableExamsPage from './pages/user/AvailableExamsPage';
-import MyResultsPage from './pages/user/MyResultsPage';
 import TakeExamPage from './pages/user/TakeExamPage';
+import ExamCompletePage from './pages/user/ExamCompletePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { authService } from './services/auth.service';
 
@@ -71,7 +71,6 @@ function App() {
           }
         >
           <Route index element={<AvailableExamsPage />} />
-          <Route path="my-results" element={<MyResultsPage />} />
         </Route>
 
         {/* Exam taking page (fullscreen, no layout) */}
@@ -88,6 +87,16 @@ function App() {
           element={
             <ProtectedRoute>
               <TakeExamPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Exam complete page (after submission) */}
+        <Route
+          path="/exam-complete"
+          element={
+            <ProtectedRoute>
+              <ExamCompletePage />
             </ProtectedRoute>
           }
         />

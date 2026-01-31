@@ -21,11 +21,12 @@ export class AuthService {
     private mailerService: MailerService
   ) { }
 
-  private issueTokens(user: any) {
+  private issueTokens(user: any, tokenVersion: number) {
     const payload = {
       email: user.email,
       sub: user.id,
       role: user.role,
+      tokenVersion: tokenVersion, // Include token version for single-device validation
     };
 
     const refreshSecret = this.configService.get<string>('REFRESH_TOKEN_SECRET');
@@ -180,7 +181,14 @@ export class AuthService {
       throw new UnauthorizedException('Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để xác thực.');
     }
 
-    const tokens = this.issueTokens(user);
+    // Increment tokenVersion to invalidate all previous tokens (single device)
+    const newTokenVersion = (user.tokenVersion || 0) + 1;
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { tokenVersion: newTokenVersion },
+    });
+
+    const tokens = this.issueTokens(user, newTokenVersion);
 
     return {
       ...tokens,
@@ -256,7 +264,7 @@ export class AuthService {
       where: { id: user.id },
       data: {
         verificationToken: resetToken,
-        // Note: Cần thêm field resetPasswordExpires vào schema nếu muốn strict expiration
+        resetPasswordExpires: resetExpires, // Lưu thời gian hết hạn
       },
     });
 
@@ -293,6 +301,16 @@ export class AuthService {
       throw new BadRequestException('Token không hợp lệ hoặc đã hết hạn.');
     }
 
+    // Validate token expiration
+    if (user.resetPasswordExpires && new Date() > user.resetPasswordExpires) {
+      // Clear expired token
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { verificationToken: null, resetPasswordExpires: null },
+      });
+      throw new BadRequestException('Token đã hết hạn. Vui lòng yêu cầu reset password mới.');
+    }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await this.prisma.user.update({
@@ -300,6 +318,7 @@ export class AuthService {
       data: {
         password: hashedPassword,
         verificationToken: null,
+        resetPasswordExpires: null, // Clear expiration
       },
     });
 

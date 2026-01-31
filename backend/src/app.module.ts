@@ -62,11 +62,11 @@ import { PrismaService } from './prisma.service';
   controllers: [],
   providers: [
     PrismaService,
-    // Only enable rate limiting in production
-    ...(process.env.NODE_ENV === 'production' ? [{
+    // Enable rate limiting globally for security
+    {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
-    }] : []),
+    },
   ],
 })
 export class AppModule { }

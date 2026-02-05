@@ -524,7 +524,7 @@ export class ExamSessionsService {
             score: true,
             totalQuestions: true,
             correctAnswers: true,
-            status: true,
+            leaveScreenCount: true,
             submittedAt: true,
           },
         },

@@ -48,16 +48,16 @@ export class AuthService {
   // Helper function to generate unique username
   private async generateUniqueUsername(email: string): Promise<string> {
     const baseUsername = email.split('@')[0];
-    
+
     // Check if base username exists
     const existingUser = await this.prisma.user.findUnique({
       where: { username: baseUsername },
     });
-    
+
     if (!existingUser) {
       return baseUsername;
     }
-    
+
     // If exists, add random suffix
     const randomSuffix = Math.random().toString(36).substring(2, 6);
     return `${baseUsername}_${randomSuffix}`;
@@ -251,8 +251,21 @@ export class AuthService {
       throw new UnauthorizedException('Tài khoản chưa được kích hoạt');
     }
 
+    // Validate tokenVersion for single-device login
+    const tokenVersion = payload?.tokenVersion ?? 0;
+    const currentTokenVersion = user.tokenVersion ?? 0;
+
+    if (tokenVersion !== currentTokenVersion) {
+      throw new UnauthorizedException('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    }
+
     return {
-      access_token: this.jwtService.sign({ email: user.email, sub: user.id, role: user.role }),
+      access_token: this.jwtService.sign({
+        email: user.email,
+        sub: user.id,
+        role: user.role,
+        tokenVersion: currentTokenVersion
+      }),
     };
   }
 

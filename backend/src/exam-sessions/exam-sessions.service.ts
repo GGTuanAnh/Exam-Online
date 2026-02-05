@@ -581,17 +581,19 @@ export class ExamSessionsService {
   }
 
   // Admin Methods
-  async getAllSessions(query?: { examId?: string; userId?: string; status?: ExamStatus }) {
+  async getAllSessions(query?: { examId?: string; userId?: string; status?: ExamStatus; examShiftId?: string }) {
     const where: any = {};
     if (query?.examId) where.examId = query.examId;
     if (query?.userId) where.userId = query.userId;
     if (query?.status) where.status = query.status;
+    if (query?.examShiftId) where.examShiftId = query.examShiftId;
 
     return this.prisma.examSession.findMany({
       where,
       include: {
         user: { select: { id: true, firstName: true, lastName: true, email: true } },
         exam: { select: { id: true, title: true, course: { select: { name: true } } } },
+        result: { select: { leaveScreenCount: true } },
       },
       orderBy: { startTime: 'desc' },
     });

@@ -29,8 +29,9 @@ export class ExamSessionsController {
     @Query('examId') examId?: string,
     @Query('userId') userId?: string,
     @Query('status') status?: ExamStatus,
+    @Query('examShiftId') examShiftId?: string,
   ) {
-    return this.examSessionsService.getAllSessions({ examId, userId, status });
+    return this.examSessionsService.getAllSessions({ examId, userId, status, examShiftId });
   }
 
   @Post('start')

@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-    CheckCircle, XCircle, User, IdCard, Clock, BookOpen,
-    Calendar, Award, FileText, Home
+    Award, User, IdCard, Clock, BookOpen,
+    Calendar, FileText, Home
 } from 'lucide-react';
 import { authService } from '../../services/auth.service';
 import { useEffect } from 'react';
@@ -21,8 +21,6 @@ interface ExamCompleteState {
         maxScore: number;
         correctAnswers: number;
         totalQuestions: number;
-        status: string;
-        passingScore: number;
     };
     examInfo: {
         title: string;
@@ -69,7 +67,7 @@ const ExamCompletePage = () => {
         ? ((summary.totalScore / summary.maxScore) * 10).toFixed(2)
         : '0.00';
 
-    const isPassed = summary.status === 'PASSED';
+
 
     // Extract student code from email (before @)
     const studentCode = currentUser?.email?.split('@')[0] || 'N/A';
@@ -90,31 +88,21 @@ const ExamCompletePage = () => {
             <div className="max-w-3xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 ${isPassed
-                        ? 'bg-gradient-to-br from-green-400 to-emerald-500'
-                        : 'bg-gradient-to-br from-red-400 to-rose-500'
-                        } shadow-lg`}>
-                        {isPassed ? (
-                            <CheckCircle className="w-10 h-10 text-white" />
-                        ) : (
-                            <XCircle className="w-10 h-10 text-white" />
-                        )}
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 bg-gradient-to-br from-indigo-400 to-purple-500 shadow-lg">
+                        <Award className="w-10 h-10 text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                        {isPassed ? 'Chúc mừng! Bạn đã hoàn thành bài thi' : 'Bài thi đã kết thúc'}
+                        Chúc mừng! Bạn đã hoàn thành bài thi
                     </h1>
-                    <p className={`text-lg font-medium ${isPassed ? 'text-green-600' : 'text-red-600'}`}>
-                        {isPassed ? '✓ Đạt yêu cầu' : '✗ Chưa đạt yêu cầu'}
+                    <p className="text-lg font-medium text-indigo-600">
+                        Kết quả của bạn đã được ghi nhận
                     </p>
                 </div>
 
                 {/* Main Result Card */}
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 mb-6">
                     {/* Score Section */}
-                    <div className={`p-8 text-center ${isPassed
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600'
-                        : 'bg-gradient-to-r from-red-500 to-rose-600'
-                        }`}>
+                    <div className="p-8 text-center bg-gradient-to-r from-indigo-500 to-purple-600">
                         <p className="text-white/80 text-sm uppercase tracking-wider mb-2">Điểm số của bạn</p>
                         <div className="text-6xl font-bold text-white mb-2">
                             {scoreOn10}
@@ -243,12 +231,6 @@ const ExamCompletePage = () => {
                                 <span className="text-gray-600">Điểm thô:</span>
                                 <span className="font-semibold text-gray-800">
                                     {summary.totalScore.toFixed(2)} / {summary.maxScore} điểm
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm mt-2">
-                                <span className="text-gray-600">Điểm chuẩn đậu:</span>
-                                <span className="font-semibold text-gray-800">
-                                    {summary.passingScore.toFixed(2)} điểm (50%)
                                 </span>
                             </div>
                         </div>

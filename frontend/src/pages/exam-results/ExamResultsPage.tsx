@@ -189,7 +189,6 @@ const ExamResultsPage: React.FC = () => {
                 <TableHead className="font-semibold text-gray-700">Đề thi</TableHead>
                 <TableHead className="font-semibold text-gray-700">Khóa học</TableHead>
                 <TableHead className="font-semibold text-gray-700 text-center">Điểm</TableHead>
-                <TableHead className="font-semibold text-gray-700 text-center">Trạng thái</TableHead>
                 <TableHead className="font-semibold text-gray-700 text-center">Vi phạm</TableHead>
                 <TableHead className="font-semibold text-gray-700 text-right">Ngày nộp</TableHead>
               </TableRow>
@@ -197,11 +196,11 @@ const ExamResultsPage: React.FC = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-gray-500">Đang tải dữ liệu...</TableCell>
+                  <TableCell colSpan={6} className="text-center py-12 text-gray-500">Đang tải dữ liệu...</TableCell>
                 </TableRow>
               ) : results.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-gray-500">Không tìm thấy kết quả nào</TableCell>
+                  <TableCell colSpan={6} className="text-center py-12 text-gray-500">Không tìm thấy kết quả nào</TableCell>
                 </TableRow>
               ) : (
                 results.map((result) => (
@@ -223,13 +222,7 @@ const ExamResultsPage: React.FC = () => {
                     <TableCell className="text-center font-bold text-gray-900">
                       {result.score?.toFixed(3)}
                     </TableCell>
-                    <TableCell className="text-center">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold
-                        ${result.isPassed ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}
-                      `}>
-                        {result.isPassed ? 'ĐẠT' : 'KHÔNG ĐẠT'}
-                      </span>
-                    </TableCell>
+
                     <TableCell className="text-center">
                       {result.leaveScreenCount !== undefined && result.leaveScreenCount > 0 ? (
                         <span className="px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold border border-yellow-200">

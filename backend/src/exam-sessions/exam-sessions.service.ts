@@ -10,7 +10,7 @@ import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../common/constants/messages.c
 import { StartExamDto } from './dto/start-exam.dto';
 import { SaveAnswerDto } from './dto/save-answer.dto';
 import { SubmitExamDto } from './dto/submit-exam.dto';
-import { ExamStatus, ResultStatus } from '@prisma/client';
+import { ExamStatus } from '@prisma/client';
 
 @Injectable()
 export class ExamSessionsService {
@@ -455,10 +455,8 @@ export class ExamSessionsService {
         });
       }
 
-      // 4. Tinh diem toi da va status
+      // 4. Tinh diem toi da
       const maxScore = examQuestions.reduce((sum, eq) => sum + eq.point, 0);
-      const passingScore = maxScore * 0.5; // 50% de pass
-      const status = totalScore >= passingScore ? ResultStatus.PASSED : ResultStatus.FAILED;
 
       // 5. Tao ExamResult (within transaction)
       const result = await tx.examResult.create({
@@ -469,7 +467,6 @@ export class ExamSessionsService {
           score: totalScore,
           totalQuestions: examQuestions.length,
           correctAnswers,
-          status,
           leaveScreenCount: leaveScreenCount || 0,
           details: {
             create: resultDetails,
@@ -496,8 +493,6 @@ export class ExamSessionsService {
           maxScore,
           correctAnswers,
           totalQuestions: examQuestions.length,
-          status,
-          passingScore,
         },
       };
     }); // End transaction

@@ -67,14 +67,15 @@ export const examService = {
       return {
         id: result.id || session.id, // Prefer result ID
         score: result.score || 0,
-        isPassed: result.status === 'PASSED',
+        totalQuestions: result.totalQuestions,
+        correctAnswers: result.correctAnswers,
         completedAt: session.endTime || result.submittedAt,
         submittedAt: result.submittedAt,
-        status: result.status || session.status, // PASSED/FAILED or COMPLETED
+        leaveScreenCount: result.leaveScreenCount,
         exam: session.exam, // Exam details attached
         user: session.user // If available
       } as ExamResult;
-    }).filter((r: ExamResult) => r.status && !['IN_PROGRESS', 'NOT_STARTED'].includes(String(r.status))); // Optional: hide incomplete sessions
+    }).filter((r: ExamResult) => r.completedAt); // Only show completed sessions
   },
 
   // Start an exam session

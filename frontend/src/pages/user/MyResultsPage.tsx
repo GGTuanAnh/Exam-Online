@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Trophy, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Trophy, Calendar, Clock, Award } from 'lucide-react';
 import { showToast } from '../../lib/toast';
 import { examService } from '../../services/exam.service';
 import type { ExamResult } from '../../types/exam';
@@ -70,7 +70,7 @@ const MyResultsPage = () => {
                     Điểm số
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Kết quả
+                    Số câu đúng
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Thời gian hoàn thành
@@ -92,24 +92,13 @@ const MyResultsPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-semibold text-gray-900">
-                        {result.score.toFixed(1)}%
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Đạt: {result.exam?.passingScore || 0}%
+                        {result.score.toFixed(1)} điểm
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {result.isPassed ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Đạt
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          <XCircle className="w-3 h-3 mr-1" />
-                          Không đạt
-                        </span>
-                      )}
+                      <div className="text-sm text-gray-900">
+                        {result.correctAnswers || 0} / {result.totalQuestions || 0}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm text-gray-600">
@@ -143,12 +132,12 @@ const MyResultsPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Số bài đạt</p>
+                <p className="text-sm font-medium text-gray-600">Tổng điểm</p>
                 <p className="text-2xl font-bold text-green-600 mt-1">
-                  {results.filter(r => r.isPassed).length}
+                  {results.reduce((sum, r) => sum + r.score, 0).toFixed(1)}
                 </p>
               </div>
-              <CheckCircle className="w-12 h-12 text-green-600 opacity-20" />
+              <Award className="w-12 h-12 text-green-600 opacity-20" />
             </div>
           </div>
 
@@ -157,7 +146,7 @@ const MyResultsPage = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Điểm trung bình</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {(results.reduce((sum, r) => sum + r.score, 0) / results.length).toFixed(1)}%
+                  {(results.reduce((sum, r) => sum + r.score, 0) / results.length).toFixed(1)}
                 </p>
               </div>
               <Clock className="w-12 h-12 text-indigo-600 opacity-20" />

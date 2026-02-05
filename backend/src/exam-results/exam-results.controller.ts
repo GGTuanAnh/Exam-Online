@@ -14,21 +14,20 @@ import { GradeEssayDto } from './dto/grade-essay.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role, ResultStatus } from '@prisma/client';
+import { Role } from '@prisma/client';
 
 @Controller('exam-results')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ExamResultsController {
-  constructor(private readonly examResultsService: ExamResultsService) {}
+  constructor(private readonly examResultsService: ExamResultsService) { }
 
   @Get()
   @Roles(Role.ADMIN)
   getAllResults(
     @Query('examId') examId?: string,
     @Query('userId') userId?: string,
-    @Query('status') status?: ResultStatus,
   ) {
-    return this.examResultsService.getAllResults({ examId, userId, status });
+    return this.examResultsService.getAllResults({ examId, userId });
   }
 
   @Get('essay-to-grade')

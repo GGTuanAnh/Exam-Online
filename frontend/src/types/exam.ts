@@ -85,10 +85,10 @@ export interface ExamSession {
 export interface ExamResult {
   id: string;
   score: number;
-  isPassed: boolean;
   completedAt: string; // or submittedAt
   submittedAt?: string;
-  status: 'PASSED' | 'FAILED' | 'PENDING' | 'GRADED';
+  totalQuestions?: number;
+  correctAnswers?: number;
   leaveScreenCount?: number; // Anti-cheat: số lần rời tab
   user?: {
     id: string;
@@ -110,7 +110,6 @@ export interface ExamResult {
   // Fallback for flat structure if used elsewhere
   exam?: {
     title: string;
-    passingScore: number;
     course: {
       name: string;
     };

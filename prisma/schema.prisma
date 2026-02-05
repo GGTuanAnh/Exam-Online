@@ -36,10 +36,6 @@ enum ExamStatus {
   TIMEOUT
 }
 
-enum ResultStatus {
-  PASSED
-  FAILED
-}
 
 // --- MODELS (Các bảng dữ liệu) ---
 
@@ -257,11 +253,10 @@ model ExamResult {
   userId    String @map("user_id")
   examId    String @map("exam_id")
 
-  score          Float // Tổng điểm đạt được
-  totalQuestions Int          @map("total_questions")
-  correctAnswers Int          @map("correct_answers")
-  submittedAt    DateTime     @default(now()) @map("submitted_at")
-  status         ResultStatus // PASSED / FAILED
+  score          Float    // Tổng điểm đạt được
+  totalQuestions Int      @map("total_questions")
+  correctAnswers Int      @map("correct_answers")
+  submittedAt    DateTime @default(now()) @map("submitted_at")
 
   leaveScreenCount Int @default(0) @map("leave_screen_count") // Số lần rời tab (Anti-cheat)
 

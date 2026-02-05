@@ -2,14 +2,14 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { GradeEssayDto } from './dto/grade-essay.dto';
-import { ResultStatus } from '@prisma/client';
+
 
 @Injectable()
 export class ExamResultsService {
   constructor(private prisma: PrismaService) { }
 
   // Admin: Lay tat ca ket qua thi (co filter)
-  async getAllResults(query?: { examId?: string; userId?: string; status?: ResultStatus }) {
+  async getAllResults(query?: { examId?: string; userId?: string }) {
     const where: any = {};
 
     if (query?.examId) {
@@ -17,9 +17,6 @@ export class ExamResultsService {
     }
     if (query?.userId) {
       where.userId = query.userId;
-    }
-    if (query?.status) {
-      where.status = query.status;
     }
 
     return this.prisma.examResult.findMany({
@@ -203,21 +200,16 @@ export class ExamResultsService {
 
     if (!result) return;
 
-    const maxScore = result.session.exam.questions.reduce((sum, eq) => sum + eq.point, 0);
-    const passingScore = maxScore * 0.5;
-    const status = totalScore >= passingScore ? ResultStatus.PASSED : ResultStatus.FAILED;
-
     // 4. Cap nhat ExamResult
     await this.prisma.examResult.update({
       where: { id: resultId },
       data: {
         score: totalScore,
         correctAnswers,
-        status,
       },
     });
 
-    return { totalScore, correctAnswers, status };
+    return { totalScore, correctAnswers };
   }
 
   // Thong ke ket qua theo exam
@@ -240,8 +232,6 @@ export class ExamResultsService {
     const totalAttempts = results.length;
     const totalScore = results.reduce((sum, r) => sum + r.score, 0);
     const averageScore = totalScore / totalAttempts;
-    const passedCount = results.filter(r => r.status === ResultStatus.PASSED).length;
-    const passRate = (passedCount / totalAttempts) * 100;
     const scores = results.map(r => r.score);
     const highestScore = Math.max(...scores);
     const lowestScore = Math.min(...scores);
@@ -250,11 +240,8 @@ export class ExamResultsService {
       examId,
       totalAttempts,
       averageScore: Math.round(averageScore * 100) / 100,
-      passRate: Math.round(passRate * 100) / 100,
       highestScore,
       lowestScore,
-      passedCount,
-      failedCount: totalAttempts - passedCount,
     };
   }
 

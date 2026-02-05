@@ -7,7 +7,6 @@ import RegisterPage from './pages/auth/RegisterPage';
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
 import VerifyEmailPendingPage from './pages/auth/VerifyEmailPendingPage';
 import VerifyEmailPage from './pages/auth/VerifyEmailPage';
-import DashboardPage from './pages/dashboard/DashboardPage';
 import UsersPage from './pages/users/UsersPage';
 import CoursesPage from './pages/courses/CoursesPage';
 import QuestionBanksPage from './pages/question-banks/QuestionBanksPage';
@@ -24,7 +23,7 @@ import { authService } from './services/auth.service';
 function App() {
   const isAuthenticated = authService.isAuthenticated();
   const user = authService.getCurrentUser();
-  const defaultRoute = user?.role === 'ADMIN' ? '/admin' : '/';
+  const defaultRoute = user?.role === 'ADMIN' ? '/admin/users' : '/';
 
   return (
     <BrowserRouter>
@@ -51,7 +50,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardPage />} />
+          <Route index element={<Navigate to="/admin/users" replace />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="courses" element={<CoursesPage />} />
           <Route path="question-banks" element={<QuestionBanksPage />} />

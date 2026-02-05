@@ -26,26 +26,26 @@ const UserLayout = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md fixed top-4 left-4 right-4 rounded-xl backdrop-blur-md px-4 py-2">
+      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg fixed top-4 left-4 right-4 rounded-2xl backdrop-blur-md px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <BookOpen className="w-8 h-8 text-white" />
-            <h1 className="text-xl font-bold">Hệ thống Thi Trực tuyến</h1>
-          </div>
           <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-2 text-sm font-medium text-white bg-white/20 px-3 py-1.5 rounded-full">
-              <Clock className="w-4 h-4" />
+            <BookOpen className="w-9 h-9 text-white" />
+            <h1 className="text-2xl font-bold tracking-tight">Hệ thống Thi Trực tuyến</h1>
+          </div>
+          <div className="flex items-center space-x-6">
+            <div className="hidden md:flex items-center space-x-2 text-sm font-medium text-white bg-white/20 px-4 py-2 rounded-full border border-white/20">
+              <Clock className="w-5 h-5" />
               <span>{currentTime.toLocaleString('vi-VN')}</span>
             </div>
-            <div className="flex items-center space-x-2 text-sm">
-              <User className="w-5 h-5 text-white/80" />
-              <span className="font-medium text-white">{user?.name || user?.email}</span>
+            <div className="flex items-center space-x-3 text-sm bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20">
+              <User className="w-5 h-5 text-white/90" />
+              <span className="font-medium text-white/95">{user?.name || user?.email}</span>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white hover:bg-red-100 hover:text-red-600 transition-colors rounded"
+              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white transition-all rounded-lg border border-transparent hover:border-white/20"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-5 h-5" />
               <span>Đăng xuất</span>
             </button>
           </div>

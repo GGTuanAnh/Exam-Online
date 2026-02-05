@@ -45,6 +45,24 @@ export class AuthService {
     };
   }
 
+  // Helper function to generate unique username
+  private async generateUniqueUsername(email: string): Promise<string> {
+    const baseUsername = email.split('@')[0];
+    
+    // Check if base username exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { username: baseUsername },
+    });
+    
+    if (!existingUser) {
+      return baseUsername;
+    }
+    
+    // If exists, add random suffix
+    const randomSuffix = Math.random().toString(36).substring(2, 6);
+    return `${baseUsername}_${randomSuffix}`;
+  }
+
   // --- 1. Hàm Đăng ký ---
   async register(registerDto: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({
@@ -62,10 +80,13 @@ export class AuthService {
     const firstName = nameParts[0];
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
+    // Generate unique username
+    const uniqueUsername = await this.generateUniqueUsername(registerDto.email);
+
     const newUser = await this.prisma.user.create({
       data: {
         email: registerDto.email,
-        username: registerDto.email.split('@')[0], // Tự động tạo username từ email
+        username: uniqueUsername,
         password: hashedPassword,
         firstName: firstName,
         lastName: lastName,

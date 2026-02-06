@@ -59,6 +59,11 @@
 }
 
 @layer base {
+  /* Thu nhỏ toàn bộ giao diện 20% */
+  html {
+    font-size: 80%;
+  }
+  
   * {
     @apply border-border;
   }

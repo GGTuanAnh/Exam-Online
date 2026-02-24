@@ -1,6 +1,7 @@
 // Quick script to create admin user for UAT
 // Run: node create-admin-uat.js
 
+require('dotenv').config(); // Load .env tự động
 const bcrypt = require('bcrypt');
 const { PrismaClient } = require('@prisma/client');
 

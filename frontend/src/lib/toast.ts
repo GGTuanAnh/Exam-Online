@@ -21,7 +21,7 @@ export const showToast = {
 
   error: (message: string) => {
     toast.error(message, {
-      duration: 5000,
+      duration: 8000,
       position: 'top-right',
       style: {
         background: '#ef4444',

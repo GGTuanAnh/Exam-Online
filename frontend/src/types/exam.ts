@@ -45,7 +45,6 @@ export interface Exam {
   randomizeQuestions?: boolean;
   enableAntiCheat?: boolean;
   createdAt: string;
-  updatedAt: string;
   _count?: {
     questions: number;
     examSessions: number;
@@ -56,8 +55,9 @@ export interface ExamSession {
   id: string;
   examId: string;
   userId: string;
-  startedAt: string;
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'TIMEOUT';
+  startTime: string;
+  endTime?: string;
+  status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'TIMEOUT';
   currentAnswers: Record<string, any>;
   remainingTime?: number; // in minutes
   exam: {

@@ -90,10 +90,10 @@ export const examService = {
   },
 
   // Save answer progressively
-  async saveAnswer(sessionId: string, currentAnswers: Record<string, any>) {
+  async saveAnswer(sessionId: string, answers: Record<string, any>) {
     const response = await api.post('/exam-sessions/save-answer', {
       sessionId,
-      currentAnswers,
+      answers,
     });
     return response.data;
   },

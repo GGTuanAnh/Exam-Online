@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { authService } from '../services/auth.service';
-import { BookOpen, LogOut, User, Clock } from 'lucide-react';
+import { BookOpen, LogOut, User, Clock, GraduationCap, Menu, X } from 'lucide-react';
 
 const UserLayout = () => {
   const user = authService.getCurrentUser();
+  const location = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -24,62 +24,115 @@ const UserLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg fixed top-4 left-4 right-4 rounded-2xl backdrop-blur-md px-6 py-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <BookOpen className="w-9 h-9 text-white" />
-            <h1 className="text-2xl font-bold tracking-tight">Hệ thống Thi Trực tuyến</h1>
-          </div>
-          <div className="flex items-center space-x-6">
-            <div className="hidden md:flex items-center space-x-2 text-sm font-medium text-white bg-white/20 px-4 py-2 rounded-full border border-white/20">
-              <Clock className="w-5 h-5" />
-              <span>{currentTime.toLocaleString('vi-VN')}</span>
+    <div className="min-h-screen bg-[#f5f6fa]">
+      {/* ── Top Navbar ── */}
+      <header className="fixed top-0 left-0 right-0 z-50 px-4 pt-3">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 text-white rounded-2xl shadow-lg shadow-indigo-200/50 px-5 py-3 flex items-center justify-between">
+            {/* Left: Logo + Nav */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center border border-white/30">
+                  <GraduationCap className="w-4.5 h-4.5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-[14px] font-bold leading-none tracking-tight">ExamOnline</h1>
+                  <p className="text-[9px] text-white/60 leading-none mt-0.5 uppercase tracking-widest">Thi trực tuyến</p>
+                </div>
+              </div>
+
+              {/* Nav links */}
+              <nav className="hidden md:flex items-center gap-1">
+                {navItems.map(item => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
+                        ${isActive
+                          ? 'bg-white/20 text-white'
+                          : 'text-white/70 hover:bg-white/10 hover:text-white'
+                        }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
             </div>
-            <div className="flex items-center space-x-3 text-sm bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20">
-              <User className="w-5 h-5 text-white/90" />
-              <span className="font-medium text-white/95">{user?.name || user?.email}</span>
+
+            {/* Right: Clock + User + Logout */}
+            <div className="flex items-center gap-3">
+              {/* Live clock */}
+              <div className="hidden lg:flex items-center gap-1.5 text-sm text-white/80 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
+                <Clock className="w-3.5 h-3.5" />
+                <span className="font-mono text-xs font-medium">
+                  {currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </span>
+              </div>
+
+              {/* User pill */}
+              <div className="flex items-center gap-2 text-sm bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
+                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                  <User className="w-3.5 h-3.5 text-white/90" />
+                </div>
+                <span className="font-medium text-white/95 max-w-[100px] truncate hidden sm:block">
+                  {user?.email?.split('@')[0] || user?.email}
+                </span>
+              </div>
+
+              {/* Logout */}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-all rounded-lg border border-transparent hover:border-white/20 group"
+              >
+                <LogOut className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                <span className="hidden sm:block">Đăng xuất</span>
+              </button>
+
+              {/* Mobile menu toggle */}
+              <button
+                className="md:hidden p-1.5 rounded-lg hover:bg-white/10"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white transition-all rounded-lg border border-transparent hover:border-white/20"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Đăng xuất</span>
-            </button>
           </div>
+
+          {/* Mobile dropdown */}
+          {mobileMenuOpen && (
+            <div className="mt-2 bg-white rounded-xl shadow-xl border border-gray-100 p-2 md:hidden">
+              {navItems.map(item => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors
+                      ${isActive ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </header>
 
-      <div className="flex pt-20">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white/80 backdrop-blur-md shadow-sm rounded-xl min-h-[calc(100vh-8rem)] fixed top-20 left-4 mt-4 overflow-y-auto">
-          <nav className="p-4 space-y-2">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = window.location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-200
-                    ${isActive ? 'bg-indigo-600 text-white shadow-inner' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-600'}
-                  `}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-8 ml-72">
+      {/* ── Main Content ── */}
+      <main className="pt-[90px] min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 py-6">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -9,7 +9,7 @@ import { Role } from '@prisma/client';
 
 @Controller('courses')
 export class CoursesController {
-  constructor(private readonly coursesService: CoursesService) {}
+  constructor(private readonly coursesService: CoursesService) { }
 
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -20,8 +20,11 @@ export class CoursesController {
 
   @Get()
   @UseGuards(AuthGuard('jwt'))
-  findAll() {
-    return this.coursesService.findAll();
+  findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.coursesService.findAll({
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    });
   }
 
   @Get(':id')

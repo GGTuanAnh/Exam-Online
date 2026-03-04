@@ -1,6 +1,12 @@
 node_modules
+
 # Keep environment variables out of version control
 .env
+
+# Thư mục cá nhân – scripts test, ghi chú, file tạm (không upload GitHub)
+cá nhân/
+docs/
+.agent/
 .env.production
 .env.local
 .env.*.local

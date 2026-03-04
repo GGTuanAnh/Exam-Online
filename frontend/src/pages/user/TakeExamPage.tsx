@@ -117,20 +117,10 @@ const TakeExamPage = () => {
       }
     };
 
-    const handleBlur = () => {
-      if (session?.exam.enableAntiCheat) {
-        setLeaveScreenCount(prev => prev + 1);
-        setShowWarning(true);
-        setTimeout(() => setShowWarning(false), 3000);
-      }
-    };
-
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleBlur);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleBlur);
     };
   }, [session?.exam.enableAntiCheat]);
 
@@ -343,7 +333,7 @@ const TakeExamPage = () => {
             courseCode: (session as any)?.exam?.course?.code || '',
           },
           sessionInfo: {
-            startTime: (session as any)?.startedAt || new Date().toISOString(),
+            startTime: session!.startTime || new Date().toISOString(),
             endTime: new Date().toISOString(),
             shiftName: (session as any)?.examShift?.name || null,
           }
@@ -425,29 +415,45 @@ const TakeExamPage = () => {
       )}
 
       {/* Header with timer */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">{session.exam.title}</h1>
-              <p className="text-sm text-gray-600">
-                Câu {currentQuestionIndex + 1} / {session.questions.length}
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${timeRemaining < 300 ? 'bg-red-100 text-red-700' : 'bg-indigo-100 text-indigo-700'
-                }`}>
-                <Clock className="w-5 h-5" />
-                <span className="font-mono font-bold">{formatTime(timeRemaining)}</span>
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-5xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold text-gray-900 truncate">{session.exam.title}</h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex gap-1 items-center text-xs text-gray-500">
+                  <span className="font-medium text-indigo-600">Câu {currentQuestionIndex + 1}</span>
+                  <span>/ {session.questions.length}</span>
+                </div>
+                <span className="text-gray-300">•</span>
+                <span className="text-xs text-gray-500">
+                  Đã trả lời: <span className="font-medium text-emerald-600">{Object.keys(answers).filter(k => answers[k]?.length > 0).length}</span>/{session.questions.length}
+                </span>
               </div>
+            </div>
+
+            {/* Timer */}
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-mono font-bold text-lg transition-all
+              ${timeRemaining < 120
+                ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse'
+                : timeRemaining < 300
+                  ? 'bg-orange-50 text-orange-600 border border-orange-200'
+                  : 'bg-indigo-50 text-indigo-600 border border-indigo-100'
+              }`}>
+              <Clock className={`w-5 h-5 ${timeRemaining < 120 ? 'animate-pulse' : ''}`} />
+              <span>{formatTime(timeRemaining)}</span>
             </div>
           </div>
 
           {/* Progress bar */}
-          <div className="mt-4">
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="mt-2.5">
+            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-indigo-600 transition-all duration-300"
+                className={`h-full rounded-full transition-all duration-300
+                  ${timeRemaining < 120 ? 'bg-red-500'
+                    : timeRemaining < 300 ? 'bg-orange-400'
+                      : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                  }`}
                 style={{ width: `${progress}%` }}
               />
             </div>

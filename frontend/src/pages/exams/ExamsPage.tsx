@@ -199,7 +199,7 @@ export default function ExamsPage() {
       }
 
       const totalQuestions = selectedQuestionIds.size;
-      const pointPerQuestion = Number((10 / totalQuestions).toFixed(3)); // Calculate point per question
+      const pointPerQuestion = Number((10 / totalQuestions).toFixed(1)); // Calculate point per question
 
       const questionsData: ExamQuestion[] = Array.from(selectedQuestionIds).map((id, index) => ({
         questionId: id,
@@ -565,7 +565,7 @@ export default function ExamsPage() {
                   </div>
                   <div className="mt-2 text-xs text-gray-500">
                     * Tổng số câu: <span className="font-bold">{matrixConfig.easy + matrixConfig.medium + matrixConfig.hard}</span>.
-                    Điểm mỗi câu: <span className="font-bold">{(10 / (matrixConfig.easy + matrixConfig.medium + matrixConfig.hard || 1)).toFixed(3)}</span> đ
+                    Điểm mỗi câu: <span className="font-bold">{(10 / (matrixConfig.easy + matrixConfig.medium + matrixConfig.hard || 1)).toFixed(1)}</span> đ
                   </div>
                 </div>
               )}

@@ -4,7 +4,7 @@ import { ERROR_MESSAGES } from '../common/constants/messages.constants';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async findAll() {
     return this.prisma.user.findMany({
@@ -41,7 +41,11 @@ export class UsersService {
 
     if (!user) {
       throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
-    } }
+    }
+
+    return user;
+  }
+
   async findByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },

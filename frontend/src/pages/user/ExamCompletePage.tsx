@@ -64,7 +64,7 @@ const ExamCompletePage = () => {
 
     // Calculate score on 10-point scale
     const scoreOn10 = summary.maxScore > 0
-        ? ((summary.totalScore / summary.maxScore) * 10).toFixed(2)
+        ? ((summary.totalScore / summary.maxScore) * 10).toFixed(1)
         : '0.00';
 
 
@@ -230,7 +230,7 @@ const ExamCompletePage = () => {
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-600">Điểm thô:</span>
                                 <span className="font-semibold text-gray-800">
-                                    {summary.totalScore.toFixed(2)} / {summary.maxScore} điểm
+                                    {summary.totalScore.toFixed(1)} / {summary.maxScore} điểm
                                 </span>
                             </div>
                         </div>

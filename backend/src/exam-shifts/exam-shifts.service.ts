@@ -73,7 +73,21 @@ export class ExamShiftsService {
     });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    // Check có session đang IN_PROGRESS không
+    const activeSessionCount = await this.prisma.examSession.count({
+      where: {
+        examShiftId: id,
+        status: 'IN_PROGRESS',
+      },
+    });
+
+    if (activeSessionCount > 0) {
+      throw new BadRequestException(
+        `Không thể xóa ca thi đang có ${activeSessionCount} thí sinh đang làm bài.`
+      );
+    }
+
     return this.prisma.examShift.delete({
       where: { id },
     });

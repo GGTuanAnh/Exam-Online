@@ -9,11 +9,11 @@ export type LoginResponse = {
   access_token: string;
   refresh_token?: string;
   user: {
-    id: number;
+    id: string;
     email: string;
-    name: string;
+    username: string;
     role: string;
-    isActive: boolean;
+    avatar?: string;
   };
 }
 
@@ -47,7 +47,7 @@ export const authService = {
   },
 
   async refresh(refreshToken: string) {
-    const response = await api.post('/auth/refresh', { refresh_token: refreshToken });
+    const response = await api.post('/auth/refresh', { refreshToken });
     return response.data;
   },
 

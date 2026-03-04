@@ -220,7 +220,7 @@ const ExamResultsPage: React.FC = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-center font-bold text-gray-900">
-                      {result.score?.toFixed(3)}
+                      {result.score?.toFixed(1)}
                     </TableCell>
 
                     <TableCell className="text-center">

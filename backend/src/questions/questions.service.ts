@@ -9,7 +9,7 @@ import * as XLSX from 'xlsx';
 
 @Injectable()
 export class QuestionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async importQuestions(questionBankId: string, fileBuffer: Buffer) {
     // Check if bank exists
@@ -60,11 +60,11 @@ export class QuestionsService {
 
         await this.prisma.question.create({
           data: {
-             content,
-             type,
-             level,
-             questionBankId,
-             options: options.length > 0 ? { create: options } : undefined
+            content,
+            type,
+            level,
+            questionBankId,
+            options: options.length > 0 ? { create: options } : undefined
           }
         });
 
@@ -75,33 +75,45 @@ export class QuestionsService {
       }
     }
 
+    // Update totalQuestions counter in QuestionBank
+    if (results.success > 0) {
+      await this.prisma.questionBank.update({
+        where: { id: questionBankId },
+        data: {
+          totalQuestions: {
+            increment: results.success,
+          },
+        },
+      });
+    }
+
     return results;
   }
 
   private parseQuestionType(val: string): QuestionType {
-     const clean = val.trim().replace(/\s+/g, '_');
-     if (Object.values(QuestionType).includes(clean as QuestionType)) {
-         return clean as QuestionType;
-     }
-     // Mappings for user friendliness
-     if (clean === 'TRAC_NGHIEM' || clean === 'MULTIPLE') return QuestionType.MULTIPLE_CHOICE;
-     if (clean === 'MOT_DAP_AN' || clean === 'SINGLE') return QuestionType.SINGLE_CHOICE;
-     if (clean === 'DUNG_SAI' || clean === 'TRUE_FALSE') return QuestionType.TRUE_FALSE;
-     if (clean === 'TU_LUAN' || clean === 'ESSAY') return QuestionType.ESSAY;
-     
-     throw new Error(`Loại câu hỏi không hợp lệ: ${val}`);
+    const clean = val.trim().replace(/\s+/g, '_');
+    if (Object.values(QuestionType).includes(clean as QuestionType)) {
+      return clean as QuestionType;
+    }
+    // Mappings for user friendliness
+    if (clean === 'TRAC_NGHIEM' || clean === 'MULTIPLE') return QuestionType.MULTIPLE_CHOICE;
+    if (clean === 'MOT_DAP_AN' || clean === 'SINGLE') return QuestionType.SINGLE_CHOICE;
+    if (clean === 'DUNG_SAI' || clean === 'TRUE_FALSE') return QuestionType.TRUE_FALSE;
+    if (clean === 'TU_LUAN' || clean === 'ESSAY') return QuestionType.ESSAY;
+
+    throw new Error(`Loại câu hỏi không hợp lệ: ${val}`);
   }
 
   private parseQuestionLevel(val: string): QuestionLevel {
-      const clean = val.trim();
-      if (Object.values(QuestionLevel).includes(clean as QuestionLevel)) {
-          return clean as QuestionLevel;
-      }
-      if (clean === 'DE' || clean === 'EASY') return QuestionLevel.EASY;
-      if (clean === 'TRUNG_BINH' || clean === 'MEDIUM') return QuestionLevel.MEDIUM;
-      if (clean === 'KHO' || clean === 'HARD') return QuestionLevel.HARD;
+    const clean = val.trim();
+    if (Object.values(QuestionLevel).includes(clean as QuestionLevel)) {
+      return clean as QuestionLevel;
+    }
+    if (clean === 'DE' || clean === 'EASY') return QuestionLevel.EASY;
+    if (clean === 'TRUNG_BINH' || clean === 'MEDIUM') return QuestionLevel.MEDIUM;
+    if (clean === 'KHO' || clean === 'HARD') return QuestionLevel.HARD;
 
-      throw new Error(`Mức độ không hợp lệ: ${val}`);
+    throw new Error(`Mức độ không hợp lệ: ${val}`);
   }
 
   async create(createQuestionDto: CreateQuestionDto) {
@@ -126,11 +138,11 @@ export class QuestionsService {
         questionBankId: createQuestionDto.questionBankId,
         options: createQuestionDto.options
           ? {
-              create: createQuestionDto.options.map((opt) => ({
-                content: opt.content,
-                isCorrect: opt.isCorrect,
-              })),
-            }
+            create: createQuestionDto.options.map((opt) => ({
+              content: opt.content,
+              isCorrect: opt.isCorrect,
+            })),
+          }
           : undefined,
       },
       include: {
@@ -272,12 +284,12 @@ export class QuestionsService {
         // Neu co update options, xoa cu va tao moi
         options: updateQuestionDto.options
           ? {
-              deleteMany: {},
-              create: updateQuestionDto.options.map((opt) => ({
-                content: opt.content,
-                isCorrect: opt.isCorrect,
-              })),
-            }
+            deleteMany: {},
+            create: updateQuestionDto.options.map((opt) => ({
+              content: opt.content,
+              isCorrect: opt.isCorrect,
+            })),
+          }
           : undefined,
       },
       include: {

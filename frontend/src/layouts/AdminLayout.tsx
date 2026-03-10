@@ -45,13 +45,22 @@ const AdminLayout = () => {
           </div>
 
           {/* Breadcrumb */}
-          {currentNav && (
-            <div className="hidden md:flex items-center gap-1.5 text-sm text-white/70">
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <ChevronRight className="w-3 h-3" />
-              <span className="text-white font-medium">{currentNav.label}</span>
-            </div>
-          )}
+          {currentNav && (() => {
+            const NavIcon = currentNav.icon;
+            return (
+              <div className="hidden md:flex items-center gap-2 text-sm">
+                <Link to="/admin" className="flex items-center gap-1.5 text-white/60 hover:text-white/90 transition-colors">
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span className="font-medium">Dashboard</span>
+                </Link>
+                <ChevronRight className="w-3.5 h-3.5 text-white/40" />
+                <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
+                  <NavIcon className="w-3.5 h-3.5 text-white" />
+                  <span className="text-white font-semibold text-[13px]">{currentNav.label}</span>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* User + Logout */}
           <div className="flex items-center gap-3">

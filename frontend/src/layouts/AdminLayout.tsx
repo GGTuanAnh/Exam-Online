@@ -25,16 +25,16 @@ const AdminLayout = () => {
     { path: '/admin/exam-results', icon: Trophy, label: 'Kết quả', color: 'text-orange-500' },
   ];
 
-  // Breadcrumb from path
-  const currentNav = navItems.find(n => location.pathname.startsWith(n.path));
 
   return (
     <div className="min-h-screen bg-[#f5f6fa]">
       {/* ── Header ── */}
-      <header className="bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 h-[62px]">
-        <div className="flex h-full px-6 items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
+      <header className="bg-gradient-to-r from-indigo-700 via-indigo-500 to-purple-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 h-[62px]">
+        <div className="flex h-full px-6 items-center">
+
+          {/* ── LEFT GROUP: Logo + Divider + Người dùng ── */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Logo */}
             <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
@@ -42,33 +42,46 @@ const AdminLayout = () => {
               <h1 className="text-[15px] font-bold leading-none tracking-tight">ExamOnline</h1>
               <p className="text-[10px] text-white/60 leading-none mt-0.5 uppercase tracking-widest">Admin Portal</p>
             </div>
+
+            {/* Vertical Divider */}
+            <div className="h-7 w-px bg-white/25 mx-1" />
+
+            {/* Người dùng nav item */}
+            <Link
+              to="/admin/users"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
+                ${location.pathname.startsWith('/admin/users')
+                  ? 'bg-white/20 text-white border border-white/30 backdrop-blur-sm'
+                  : 'text-white/75 hover:text-white hover:bg-white/10'
+                }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>Người dùng</span>
+            </Link>
           </div>
 
-          {/* Breadcrumb */}
-          {currentNav && (() => {
-            const NavIcon = currentNav.icon;
-            return (
-              <div className="hidden md:flex items-center gap-2 text-sm">
-                <Link to="/admin" className="flex items-center gap-1.5 text-white/60 hover:text-white/90 transition-colors">
-                  <LayoutDashboard className="w-4 h-4" />
-                  <span className="font-medium">Dashboard</span>
-                </Link>
-                <ChevronRight className="w-3.5 h-3.5 text-white/40" />
-                <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
-                  <NavIcon className="w-3.5 h-3.5 text-white" />
-                  <span className="text-white font-semibold text-[13px]">{currentNav.label}</span>
-                </div>
-              </div>
-            );
-          })()}
+          {/* ── CENTER: Dashboard ── */}
+          <div className="flex-1 flex items-center justify-center">
+            <Link
+              to="/admin"
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all
+                ${location.pathname === '/admin' || location.pathname === '/admin/'
+                  ? 'bg-white/20 text-white border border-white/30 backdrop-blur-sm'
+                  : 'text-white/75 hover:text-white hover:bg-white/10'
+                }`}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span>Dashboard</span>
+            </Link>
+          </div>
 
-          {/* User + Logout */}
-          <div className="flex items-center gap-3">
+          {/* ── RIGHT: User pill + Logout ── */}
+          <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-2 text-sm bg-white/10 px-3 py-1.5 rounded-full border border-white/20 backdrop-blur-sm">
               <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
                 <User className="w-3.5 h-3.5 text-white/90" />
               </div>
-              <span className="font-medium text-white/95 max-w-[120px] truncate">{user?.email}</span>
+              <span className="font-medium text-white/95 max-w-[140px] truncate">{user?.email}</span>
               <span className="px-1.5 py-0.5 text-[10px] uppercase font-bold bg-amber-400 text-amber-900 rounded-full tracking-wide">Admin</span>
             </div>
             <button
@@ -79,6 +92,7 @@ const AdminLayout = () => {
               <span className="hidden sm:block">Đăng xuất</span>
             </button>
           </div>
+
         </div>
       </header>
 
